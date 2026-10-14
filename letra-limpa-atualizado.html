@@ -1,0 +1,2752 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2457D6">
+<title>Letra Limpa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+/* Layout: início = estante de cadernos; editor = barra no topo, folha rolável, barra de ferramentas embaixo */
+:root {
+  --bg: #ECEFEA;
+  --surface: #FFFFFF;
+  --paper: #FDFDFB;
+  --ink: #1B2430;
+  --muted: #5B6773;
+  --line: #D3D9D0;
+  --rule: #B7D0E6;
+  --margin: #E7A6A6;
+  --dot: #8EA2B5;
+  --accent: #2457D6;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E1E9FB;
+  --hl-soft: rgba(255, 214, 64, 0.7);
+  --danger: #C8362E;
+  --danger-soft: #FBE6E4;
+  --c-blue: #2457D6;
+  --c-red: #D23B30;
+  --c-green: #1D8A4C;
+  --c-yellow: #F2BF00;
+  --shadow: 0 1px 2px rgba(20, 30, 40, .08), 0 6px 18px rgba(20, 30, 40, .10);
+  --f-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sidebar-w: 240px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161B; --surface: #1C2229; --paper: #20262D; --ink: #ECEFF2; --muted: #9AA7B4;
+    --line: #323B45; --rule: #34495E; --margin: #6E3C3C; --dot: #5A6D80;
+    --accent: #7EA2FF; --accent-ink: #0E1626; --accent-soft: #24304A;
+    --hl-soft: rgba(255, 216, 77, 0.3); --danger: #FF7A70; --danger-soft: #3A2022;
+    --c-blue: #7EA2FF; --c-red: #FF8077; --c-green: #5FD08A; --c-yellow: #FFD84D;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161B; --surface: #1C2229; --paper: #20262D; --ink: #ECEFF2; --muted: #9AA7B4;
+  --line: #323B45; --rule: #34495E; --margin: #6E3C3C; --dot: #5A6D80;
+  --accent: #7EA2FF; --accent-ink: #0E1626; --accent-soft: #24304A;
+  --hl-soft: rgba(255, 216, 77, 0.3); --danger: #FF7A70; --danger-soft: #3A2022;
+  --c-blue: #7EA2FF; --c-red: #FF8077; --c-green: #5FD08A; --c-yellow: #FFD84D;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .35);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+@supports (height: 100dvh) { html, body { height: 100dvh; } }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.45 var(--f-body);
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+.ic { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#app { height: 100%; display: flex; flex-direction: column; min-width: 0; }
+
+/* ---------- botões ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 12px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.btn.danger { background: var(--danger-soft); color: var(--danger); border-color: transparent; }
+.btn.ghost { background: transparent; }
+.btn[disabled] { opacity: .45; cursor: default; }
+.icon-btn { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; color: var(--ink); }
+.icon-btn:hover, .btn.ghost:hover { background: var(--accent-soft); }
+.icon-btn[disabled] { opacity: .35; cursor: default; }
+
+/* ---------- início ---------- */
+.home { flex: 1; min-height: 0; overflow: auto; padding: 28px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px)); }
+.home-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+.home-head h1 { font: 800 clamp(30px, 6vw, 44px)/1.05 var(--f-display); letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+.home-head h1 mark { background: linear-gradient(transparent 56%, var(--hl-soft) 56% 92%, transparent 92%); color: inherit; padding: 0 .08em; }
+.home-head p { margin: 6px 0 0; color: var(--muted); }
+.head-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(156px, 1fr)); gap: 26px 20px; }
+.nb { min-width: 0; }
+.cv-btn { display: block; width: 100%; text-align: left; }
+.cover { position: relative; display: block; aspect-ratio: 3 / 4; max-width: 100%; background: var(--cv); border-radius: 6px 14px 14px 6px; overflow: hidden; box-shadow: var(--shadow); }
+.cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.28), rgba(0,0,0,0) 14%, rgba(255,255,255,.08) 100%); pointer-events: none; }
+.spiral { position: absolute; left: 0; top: 0; bottom: 0; width: 20px; z-index: 2;
+  background: radial-gradient(ellipse 7px 4.5px at 50% 50%, rgba(255,255,255,.92) 0 55%, rgba(0,0,0,.35) 60% 100%, transparent 101%) 0 0 / 100% 20px repeat-y; }
+.label { position: absolute; z-index: 3; left: 30px; right: 12px; bottom: 14px; padding: 7px 9px; background: #FFFFFF; color: #1B2430; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,.25); display: grid; gap: 1px; }
+.label b { font: 700 13px/1.2 var(--f-display); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.label small { font-size: 10.5px; color: #5B6773; letter-spacing: .04em; text-transform: uppercase; }
+.nb-meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 4px; margin-top: 10px; min-width: 0; }
+.nb-meta div { min-width: 0; display: grid; }
+.nb-meta strong { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nb-meta span { color: var(--muted); font-size: 13px; }
+.nb-meta .icon-btn { margin: -8px -8px 0 0; }
+.empty { grid-column: 1 / -1; padding: 36px 0; display: grid; gap: 14px; justify-items: start; max-width: 460px; }
+.empty h2 { margin: 0; font: 700 22px/1.2 var(--f-display); }
+.empty p { margin: 0; color: var(--muted); }
+.warn { margin: 0 0 18px; padding: 12px 14px; border-radius: 12px; background: var(--danger-soft); color: var(--danger); font-weight: 500; }
+
+/* ---------- menus e janelas ---------- */
+.pop-bg { position: fixed; inset: 0; z-index: 40; }
+.pop { position: fixed; z-index: 41; min-width: 200px; max-width: calc(100vw - 24px); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 6px; display: grid; }
+.pop button { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 12px; border-radius: 10px; text-align: left; font-weight: 500; }
+.pop button:hover { background: var(--accent-soft); }
+.pop button.danger { color: var(--danger); }
+.pop button.danger:hover { background: var(--danger-soft); }
+.pop .mini { flex: none; width: 34px; height: 34px; border-radius: 6px; border: 1px solid var(--line); background-color: var(--paper); }
+.modal-bg { position: fixed; inset: 0; z-index: 50; background: rgba(8, 12, 18, .55); display: grid; place-items: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.modal { width: min(100%, 520px); max-height: 100%; overflow: auto; background: var(--surface); border-radius: 18px; box-shadow: var(--shadow); padding: 20px; display: grid; gap: 18px; min-width: 0; }
+.modal.wide { width: min(100%, 760px); }
+.modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.modal-head h2 { margin: 0; font: 700 22px/1.2 var(--f-display); text-wrap: balance; }
+.modal-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.field { display: grid; gap: 8px; min-width: 0; }
+.field > label, .field > .lbl { font-weight: 600; font-size: 13px; letter-spacing: .02em; color: var(--muted); }
+.text-in { width: 100%; min-height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); font-size: 16px; }
+.cover-pick { display: grid; grid-template-columns: 96px 1fr; gap: 16px; align-items: start; }
+.cover-pick .cover { width: 96px; border-radius: 4px 10px 10px 4px; }
+.cover-pick .label { left: 18px; right: 6px; bottom: 8px; padding: 3px 5px; }
+.cover-pick .label b { font-size: 9px; }
+.cover-pick .label small { display: none; }
+.cover-pick .spiral { width: 13px; background-size: 100% 13px; }
+.swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+.sw { width: 34px; height: 34px; border-radius: 50%; background: var(--sw); border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.sw[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--accent); }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.typegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+.typeopt { display: grid; gap: 8px; justify-items: center; padding: 10px; border-radius: 14px; border: 2px solid var(--line); font-weight: 600; font-size: 13px; }
+.typeopt .thumb { width: 100%; aspect-ratio: 4 / 3; border-radius: 8px; border: 1px solid var(--line); background-color: var(--paper); }
+.typeopt small { color: var(--muted); font-weight: 400; margin-top: -6px; }
+.typeopt[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+#nbkinds .typeopt { min-height: 100px; }
+.hint { margin: 0; color: var(--muted); font-size: 14px; }
+.sect { display: grid; gap: 12px; padding-top: 16px; border-top: 1px solid var(--line); }
+.sect:first-of-type { border-top: 0; padding-top: 0; }
+.sect h3 { margin: 0; font: 700 16px/1.2 var(--f-display); }
+.stepper { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.stepper output { min-width: 64px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cmbox { background: var(--accent-soft); border: 2px solid var(--accent); border-radius: 2px; }
+input[type="range"] { width: 100%; accent-color: var(--accent); min-height: 32px; }
+.switch { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; width: 100%; text-align: left; }
+.switch i { flex: none; width: 48px; height: 28px; border-radius: 14px; background: var(--line); position: relative; transition: background .15s; }
+.switch i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform .15s; }
+.switch[aria-checked="true"] i { background: var(--accent); }
+.switch[aria-checked="true"] i::after { transform: translateX(20px); }
+
+/* ---------- treino da letra ---------- */
+.train { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.pad-wrap { display: grid; gap: 10px; min-width: 0; }
+.pad-label { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.pad-label b { font: 800 34px/1 var(--f-display); }
+.pad-label span { color: var(--muted); font-size: 13px; }
+#pad { width: 100%; aspect-ratio: 3 / 2; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; touch-action: none; display: block; }
+.chipgroups { display: grid; gap: 12px; min-width: 0; }
+.tr-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.tr-feedback { min-height: 42px; padding: 10px 12px; border-radius: 10px; background: var(--bg); color: var(--muted); font-size: 13px; }
+.tr-actions .btn[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.chipgroups h4 { margin: 0 0 6px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { position: relative; min-width: 38px; height: 38px; padding: 0 8px; border-radius: 10px; border: 1px solid var(--line); display: inline-grid; place-items: center; font-weight: 700; }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.chip em { position: absolute; top: -5px; right: -4px; min-width: 16px; height: 16px; border-radius: 8px; padding: 0 4px; background: var(--c-green); color: #fff; font: 700 10px/16px var(--f-body); font-style: normal; text-align: center; }
+@media (max-width: 640px) { .train { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- EDITOR ---------- */
+.ed { height: 100%; display: flex; flex-direction: column; min-height: 0; }
+.ed-container { display: flex; flex: 1; min-height: 0; min-width: 0; }
+
+.ed-sidebar { width: var(--sidebar-w); border-right: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; flex: none; }
+.ed-sidebar-head { padding: 12px 12px 12px 16px; border-bottom: 1px solid var(--line); font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+.ed-sidebar-content { flex: 1; overflow-y: auto; padding: 12px; display: grid; align-content: start; gap: 4px; }
+.sidebar-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: 10px 12px; border-radius: 8px; color: var(--muted); font-size: 14px; text-align: left; }
+.sidebar-item small { font-size: 12px; opacity: .8; }
+.sidebar-item:hover { background: var(--bg); color: var(--ink); }
+.sidebar-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+.ed-main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; position: relative; }
+
+.ed-top-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); background: var(--surface); border-bottom: 1px solid var(--line); }
+.ed-title { min-width: 0; }
+.ed-title strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 46vw; }
+.ed-title span { font-size: 12px; color: var(--muted); }
+.ed-status { font-size: 12px; color: var(--muted); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.status-indicator { width: 8px; height: 8px; border-radius: 50%; background: var(--c-green); flex: none; }
+.status-indicator.saving { background: var(--c-yellow); animation: pulse 1.5s infinite; }
+.status-indicator.error { background: var(--c-red); }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+.stage { flex: 1; min-height: 0; overflow: auto; padding: 12px 12px 28px; background: var(--bg); overscroll-behavior: contain; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; display: flex; align-items: flex-start; justify-content: flex-start; }
+.sheet { position: relative; flex: none; margin: 0 auto; background-color: var(--paper); border-radius: 6px; box-shadow: var(--shadow); overflow: hidden; }
+.page-zones { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0; border-radius:6px; }
+.zone-bg { position:absolute; left:0; width:100%; pointer-events:none; }
+#cv { position: absolute; left: 0; top: 0; z-index:1; display: block; touch-action: none; cursor: crosshair; }
+.ed-extra-actions { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.ed-extra-actions .btn { min-height:38px; padding:0 10px; font-size:13px; }
+.zone-row { display:grid; grid-template-columns:minmax(120px,1fr) 90px 40px; gap:8px; align-items:center; }
+.zone-row .text-in { min-height:40px; padding:0 8px; }
+.zone-pct { color:var(--muted); font-size:12px; }
+@media (max-width:768px) { .ed-extra-actions .btn { min-height:36px; padding:0 8px; font-size:12px; } .ed-top-bar { gap:6px; } }
+@media print { body { background:#fff !important; } }
+.zoom-controls { display:flex; align-items:center; gap:3px; margin-left:6px; padding-left:8px; border-left:1px solid var(--line); }
+.zoom-controls button { min-width:32px; height:34px; padding:0 8px; border:1px solid var(--line); border-radius:8px; font-weight:700; background:var(--surface); }
+.zoom-controls button:hover { background:var(--accent-soft); }
+.zoom-controls output { min-width:46px; text-align:center; font-size:12px; font-weight:700; color:var(--muted); }
+#cv { position: absolute; left: 0; top: 0; display: block; touch-action: none; cursor: crosshair; }
+.stage.hand #cv { cursor: grab; }
+.stage.sel #cv { cursor: pointer; }
+
+.tools { border-top: 1px solid var(--line); background: var(--surface); display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 18px; padding: 12px 12px max(12px, env(safe-area-inset-bottom, 0px)); }
+.tgroup { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.tool { display: grid; justify-items: center; gap: 1px; min-width: 60px; min-height: 52px; padding: 6px 8px; border-radius: 12px; font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.tool[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+.tool.letter[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.dot { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; }
+.dot[aria-pressed="true"] { background: var(--accent-soft); }
+.dot i { display: block; border-radius: 50%; background: var(--ink); }
+.cdot { width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--surface); background: var(--cc); box-shadow: 0 0 0 1px var(--line); }
+.cdot[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--accent); }
+.sep { width: 1px; align-self: stretch; background: var(--line); }
+.lines { min-width: 76px; text-align: center; font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; }
+.tool.lock[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+
+@media (max-width: 768px) {
+  .ed-sidebar { display: none; }
+  .sep { display: none; } .tool { min-width: 52px; }
+  .ed-title strong { max-width: 36vw; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ---------- login ---------- */
+#auth { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; background: var(--bg); color: var(--ink); font-family: Figtree, system-ui, sans-serif; }
+#auth .box { width: 100%; max-width: 360px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 26px 22px; box-shadow: 0 8px 30px rgba(0,0,0,.08); }
+#auth h1 { font: 800 26px 'Bricolage Grotesque', system-ui, sans-serif; margin: 0 0 4px; }
+#auth p { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+#auth input { width: 100%; padding: 13px 14px; margin: 0 0 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); color: var(--ink); font: 500 16px Figtree, system-ui, sans-serif; }
+#auth button { width: 100%; min-height: 48px; border: 0; border-radius: 12px; background: var(--ink); color: var(--surface); font: 700 16px Figtree, system-ui, sans-serif; cursor: pointer; }
+#auth button:disabled { opacity: .6; }
+#auth .alt { background: none; color: var(--muted); font-weight: 600; font-size: 14px; margin-top: 8px; min-height: 44px; }
+#auth .err { color: #C0392B; font-size: 14px; min-height: 18px; margin: 0 0 8px; }
+
+#splash { position: fixed; inset: 0; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: linear-gradient(160deg, #2F6BF0, #173A9A); color: #fff; font-family: Figtree, system-ui, sans-serif; transition: opacity .35s; }
+#splash.off { opacity: 0; pointer-events: none; }
+#splash .sp-ic { width: 132px; height: 132px; filter: drop-shadow(0 12px 24px rgba(5,15,60,.4)); }
+#splash h1 { margin: 0; font: 800 30px 'Bricolage Grotesque', system-ui, sans-serif; letter-spacing: .2px; }
+#splash p { margin: 0; font-size: 14px; opacity: .8; }
+#splash .sp-bar { width: 140px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.25); overflow: hidden; }
+#splash .sp-bar i { display: block; width: 45%; height: 100%; border-radius: 4px; background: #fff; animation: spmove 1.1s ease-in-out infinite; }
+@keyframes spmove { 0% { transform: translateX(-110%); } 100% { transform: translateX(320%); } }
+</style>
+</head>
+<body>
+
+<div id="splash" role="status" aria-live="polite"><svg class="sp-ic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" aria-hidden="true">
+  <defs>
+    <linearGradient id="spbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2F6BF0"/><stop offset="1" stop-color="#1B3FA8"/>
+    </linearGradient>
+    <filter id="spsh" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0B1B4D" flood-opacity=".35"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" rx="230" fill="url(#spbg)"/>
+  <g filter="url(#spsh)">
+    <rect x="200" y="150" width="624" height="724" rx="44" fill="#FDFDFB"/>
+  </g>
+  <line x1="300" y1="150" x2="300" y2="874" stroke="#E7867D" stroke-width="5"/>
+  <g stroke="#CFD8E8" stroke-width="4">
+    <line x1="200" y1="330" x2="824" y2="330"/><line x1="200" y1="430" x2="824" y2="430"/>
+    <line x1="200" y1="530" x2="824" y2="530"/><line x1="200" y1="630" x2="824" y2="630"/>
+    <line x1="200" y1="730" x2="824" y2="730"/><line x1="200" y1="830" x2="824" y2="830"/>
+  </g>
+  <g fill="#1B2430" opacity=".85">
+    <circle cx="250" cy="260" r="14"/><circle cx="250" cy="512" r="14"/><circle cx="250" cy="764" r="14"/>
+  </g>
+  <path d="M440 215 V515 H620" fill="none" stroke="#1B2430" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M340 640 c18 -34 34 -34 46 -4 s28 34 40 4 s26 -34 40 -2 s26 34 38 4" fill="none" stroke="#2F6BF0" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>
+  <path d="M340 760 c18 -34 34 -34 46 -4 s28 34 40 4 s26 -34 40 -2 s26 34 38 4 s26 -30 40 0 s28 30 42 0" fill="none" stroke="#2F6BF0" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity=".35"/>
+  <g fill="#F5B82E">
+    <path d="M700 250 l16 40 40 16 -40 16 -16 40 -16 -40 -40 -16 40 -16z"/>
+    <path d="M760 400 l9 22 22 9 -22 9 -9 22 -9 -22 -22 -9 22 -9z"/>
+  </g>
+  <g transform="translate(655 600) rotate(38)">
+    <rect x="-22" y="-20" width="44" height="210" rx="12" fill="#E8A317"/>
+    <rect x="-22" y="-20" width="44" height="40" rx="12" fill="#1B2430"/>
+    <path d="M-22 190 L0 245 L22 190z" fill="#F3D9A4"/>
+    <path d="M-8 226 L0 245 L8 226z" fill="#1B2430"/>
+  </g>
+</svg>
+<h1>Letra Limpa</h1><div class="sp-bar"><i></i></div><p>Abrindo seus cadernos…</p></div>
+
+<div id="auth"><form class="box" id="auth-form" novalidate>
+  <h1>Letra Limpa</h1><p id="auth-sub">Entre com seu e-mail e senha.</p>
+  <input id="auth-email" type="email" autocomplete="email" inputmode="email" placeholder="E-mail">
+  <input id="auth-pass" type="password" autocomplete="current-password" placeholder="Senha (mín. 6 caracteres)">
+  <div class="err" id="auth-err" role="alert"></div>
+  <button type="submit" id="auth-go">Entrar</button>
+  <button type="button" class="alt" id="auth-mode">Ainda não tenho cadastro</button>
+  <button type="button" class="alt" id="auth-reset">Esqueci a senha</button>
+</form></div>
+<div id="app"></div>
+<div id="layer"></div>
+
+<script>
+window.LL_splashOff = function () { var e = document.getElementById('splash'); if (e) { e.classList.add('off'); setTimeout(function () { e.remove(); }, 450); } };
+setTimeout(window.LL_splashOff, 8000);
+/* Se o módulo do Firebase não carregar (sem internet), avisa na tela de entrada */
+setTimeout(function () {
+  if (!window.LL_cloud) {
+    var e = document.getElementById('auth-err');
+    if (e && !e.textContent) e.textContent = 'Sem conexão com o servidor de login. Verifique sua internet e recarregue a página.';
+    window.LL_splashOff();
+  }
+}, 5000);
+</script>
+
+<script>
+/* Reconhecedor de traços (nuvem de pontos, estilo $P). Funciona offline, sem biblioteca.
+   Cada molde é uma lista de traços; cada traço é uma lista de [x, y]. */
+const Recog = (function () {
+  const N = 32;
+  const PI = Math.PI;
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+  function toPts(strokes) {
+    const out = [];
+    strokes.forEach((s, i) => s.forEach((p) => out.push({ x: p[0], y: p[1], id: i })));
+    return out;
+  }
+  function pathLen(pts) {
+    let d = 0;
+    for (let i = 1; i < pts.length; i++) d += dist(pts[i - 1], pts[i]);
+    return d;
+  }
+  // Reamostra cada traço separadamente. Assim, pontos isolados (pingo do i/j,
+  // acentos e pontos finais) não desaparecem quando a nuvem é normalizada.
+  function resample(pts, n) {
+    if (!pts.length) return [];
+    const groups = [];
+    for (const p of pts) {
+      let g = groups[groups.length - 1];
+      if (!g || g[0].id !== p.id) { g = []; groups.push(g); }
+      g.push(p);
+    }
+    if (groups.length > n) {
+      // Para escritas longas, mantém os traços mais longos e não ultrapassa N pontos.
+      groups.sort((a, b) => pathLen(b) - pathLen(a));
+      groups.length = n;
+    }
+    const lengths = groups.map(pathLen);
+    const total = lengths.reduce((a, v) => a + v, 0);
+    const counts = groups.map(() => 1);
+    let remaining = Math.max(0, n - groups.length);
+    if (remaining) {
+      const mean = total / Math.max(1, groups.length);
+      const weights = lengths.map(v => Math.max(v, mean * 0.18, 0.001));
+      const weightTotal = weights.reduce((a, v) => a + v, 0);
+      const fractions = [];
+      let used = 0;
+      for (let i = 0; i < groups.length; i++) {
+        const quota = remaining * weights[i] / weightTotal;
+        const whole = Math.floor(quota);
+        counts[i] += whole; used += whole;
+        fractions.push({ i, f: quota - whole });
+      }
+      fractions.sort((a, b) => b.f - a.f);
+      for (let i = 0; i < remaining - used; i++) counts[fractions[i % fractions.length].i]++;
+    }
+    function atDistance(g, len, target) {
+      if (g.length === 1 || len <= 1e-9) return { x: g[0].x, y: g[0].y, id: g[0].id };
+      let walked = 0;
+      for (let j = 1; j < g.length; j++) {
+        const seg = dist(g[j - 1], g[j]);
+        if (walked + seg >= target) {
+          const t = seg ? (target - walked) / seg : 0;
+          return { x: g[j - 1].x + (g[j].x - g[j - 1].x) * t,
+            y: g[j - 1].y + (g[j].y - g[j - 1].y) * t, id: g[0].id };
+        }
+        walked += seg;
+      }
+      const last = g[g.length - 1]; return { x: last.x, y: last.y, id: g[0].id };
+    }
+    const out = [];
+    groups.forEach((g, i) => {
+      const count = counts[i], len = lengths[i];
+      for (let j = 0; j < count; j++) out.push(atDistance(g, len, count <= 1 ? len * 0.5 : len * j / (count - 1)));
+    });
+    // Ajuste por arredondamento da distribuição de pontos.
+    while (out.length < n) out.push(out[out.length - 1] || pts[0]);
+    return out.slice(0, n);
+  }
+  function normalize(pts) {
+    let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
+    for (const p of pts) {
+      if (p.x < x1) x1 = p.x;
+      if (p.y < y1) y1 = p.y;
+      if (p.x > x2) x2 = p.x;
+      if (p.y > y2) y2 = p.y;
+    }
+    const s = Math.max(x2 - x1, y2 - y1) || 1;
+    const q = pts.map((p) => ({ x: (p.x - x1) / s, y: (p.y - y1) / s, id: p.id }));
+    let cx = 0, cy = 0;
+    q.forEach((p) => { cx += p.x; cy += p.y; });
+    cx /= q.length; cy /= q.length;
+    return q.map((p) => ({ x: p.x - cx, y: p.y - cy, id: p.id }));
+  }
+  function cloud(strokes) {
+    const clean = (strokes || []).filter((s) => Array.isArray(s) && s.length);
+    if (!clean.length) return null;
+    // Um toque rápido muitas vezes vira um único ponto (pingo do i/j, acento).
+    // Representamos esse ponto como um círculo pequeno, proporcional à letra inteira.
+    let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+    for (const st of clean) for (const p of st) {
+      x1 = Math.min(x1, p[0]); y1 = Math.min(y1, p[1]);
+      x2 = Math.max(x2, p[0]); y2 = Math.max(y2, p[1]);
+    }
+    const scale = Math.max(x2 - x1, y2 - y1, 1);
+    const dotR = Math.max(0.6, scale * 0.035);
+    const expanded = clean.map((st) => {
+      if (st.length !== 1) return st;
+      const [x, y] = st[0];
+      return Array.from({ length: 8 }, (_, i) => {
+        const a = (2 * PI * i) / 8;
+        return [x + Math.cos(a) * dotR, y + Math.sin(a) * dotR];
+      });
+    });
+    const pts = toPts(expanded);
+    return pts.length ? normalize(resample(pts, N)) : null;
+  }
+  /* distância "nuvem" com abandono antecipado: se a soma já passou do limite, para na hora */
+  function cd(a, b, start, lim) {
+    const n = a.length;
+    const m = new Array(n).fill(false);
+    let sum = 0, i = start;
+    do {
+      let idx = -1, min = 1e9;
+      for (let j = 0; j < n; j++) {
+        if (!m[j]) {
+          const d = Math.hypot(a[i].x - b[j].x, a[i].y - b[j].y);
+          if (d < min) { min = d; idx = j; }
+        }
+      }
+      m[idx] = true;
+      const w = 1 - ((i - start + n) % n) / n;
+      sum += w * min;
+      if (sum >= lim) return sum;
+      i = (i + 1) % n;
+    } while (i !== start);
+    return sum;
+  }
+  function greedy(a, b, lim) {
+    const n = a.length;
+    const step = Math.floor(Math.sqrt(n));
+    let min = lim === undefined ? 1e9 : lim;
+    for (let i = 0; i < n; i += step) min = Math.min(min, cd(a, b, i, min), cd(b, a, i, min));
+    return min;
+  }
+
+  /* ---------- moldes prontos: números e símbolos (caixa de 0 a 100) ---------- */
+  const arc = (cx, cy, rx, ry, a0, a1, n = 14) => {
+    const p = [];
+    for (let i = 0; i <= n; i++) {
+      const t = a0 + ((a1 - a0) * i) / n;
+      p.push([cx + rx * Math.cos(t), cy + ry * Math.sin(t)]);
+    }
+    return p;
+  };
+  const ell = (cx, cy, rx, ry) => arc(cx, cy, rx, ry, -PI / 2, 1.5 * PI, 22);
+  const eight = [];
+  for (let i = 0; i <= 40; i++) {
+    const t = -PI / 2 + (2 * PI * i) / 40;
+    eight.push([50 + 32 * Math.sin(2 * t), 50 + 50 * Math.sin(t)]);
+  }
+  const B = {
+    0: [[ell(50, 50, 32, 50)], [ell(50, 50, 40, 50)]],
+    1: [
+      [[[50, 0], [50, 100]]],
+      [[[28, 24], [50, 0], [50, 100]]],
+      [[[28, 24], [50, 0], [50, 100]], [[28, 100], [72, 100]]],
+      [[[40, 10], [52, 0], [52, 100]]],
+    ],
+    2: [
+      [[...arc(50, 30, 36, 30, PI, 2 * PI + 0.7), [12, 100], [90, 100]]],
+      [[...arc(48, 28, 34, 28, PI * 1.05, 2 * PI + 0.9), [22, 68], [12, 100], [90, 100]]],
+    ],
+    3: [
+      [[...arc(45, 25, 32, 25, PI * 1.1, 2.5 * PI), ...arc(45, 75, 36, 25, 1.5 * PI, 2.9 * PI)]],
+      [[[15, 0], [80, 0], [45, 45]], arc(45, 72, 38, 28, 1.5 * PI, 2.9 * PI)],
+    ],
+    4: [
+      [[[62, 0], [8, 68], [92, 68]], [[68, 20], [68, 100]]],
+      [[[20, 0], [20, 60], [90, 60]], [[65, 0], [65, 100]]],
+    ],
+    5: [
+      [[[85, 0], [25, 0], [20, 45], ...arc(48, 68, 36, 32, 1.2 * PI, 2.85 * PI)]],
+      [[[20, 0], [20, 45], ...arc(48, 68, 36, 32, 1.2 * PI, 2.85 * PI)], [[85, 0], [22, 0]]],
+    ],
+    6: [
+      [[[72, 0], [45, 20], [25, 50], [18, 70], ...ell(50, 70, 32, 30)]],
+      [[[65, 0], [28, 45], [18, 72]], ell(50, 72, 32, 28)],
+    ],
+    7: [
+      [[[10, 0], [90, 0], [35, 100]]],
+      [[[10, 0], [90, 0], [35, 100]], [[25, 50], [70, 50]]],
+    ],
+    8: [[ell(50, 25, 28, 24), ell(50, 74, 34, 26)], [eight]],
+    9: [
+      [ell(50, 30, 32, 30), [[82, 30], [80, 62], [58, 92], [32, 100]]],
+      [ell(50, 28, 30, 26), [[80, 28], [80, 100]]],
+    ],
+    '+': [[[[8, 50], [92, 50]], [[50, 8], [50, 92]]]],
+    '-': [[[[5, 50], [95, 50]]]],
+    '=': [[[[8, 35], [92, 35]], [[8, 65], [92, 65]]]],
+    '/': [[[[80, 0], [20, 100]]]],
+    '(': [[arc(70, 50, 40, 50, PI * 0.55, PI * 1.45)]],
+    ')': [[arc(30, 50, 40, 50, -PI * 0.45, PI * 0.45)]],
+    x: [[[[10, 10], [90, 90]], [[90, 10], [10, 90]]]],
+  };
+
+  /* Moldes de letras de forma (impressas). A cursiva personalizada continua sendo
+     aprendida pelas amostras do usuário. Os moldes são caminhos simples para dar uma
+     referência inicial, sem depender de bibliotecas externas. */
+  const poly = (...pts) => pts;
+  const ALPHA = {
+    A: [[poly([10,100],[50,0],[90,100]), poly([27,64],[73,64])]],
+    B: [[poly([18,0],[18,100]), arc(18,25,34,25,-PI/2,PI/2,16), arc(18,74,36,26,-PI/2,PI/2,18)]],
+    C: [[arc(52,50,40,48,PI/3,2*PI-PI/3,24)]],
+    D: [[poly([18,0],[18,100]), arc(18,50,42,50,-PI/2,PI/2,22)]],
+    E: [[poly([16,0],[16,100]), poly([16,0],[86,0]), poly([16,50],[72,50]), poly([16,100],[88,100])]],
+    F: [[poly([18,100],[18,0],[86,0]), poly([18,48],[70,48])]],
+    G: [[arc(52,50,40,48,PI/3,2*PI-PI/3,24), poly([52,52],[91,52],[91,72])]],
+    H: [[poly([16,0],[16,100]), poly([84,0],[84,100]), poly([16,52],[84,52])]],
+    I: [[poly([18,0],[82,0]), poly([50,0],[50,100]), poly([18,100],[82,100])]],
+    J: [[poly([18,0],[88,0],[88,70],[78,92],[55,100],[32,91],[27,78])]],
+    K: [[poly([18,0],[18,100]), poly([82,0],[22,54],[88,100])]],
+    L: [[poly([18,0],[18,100],[88,100])]],
+    M: [[poly([10,100],[10,0],[50,54],[90,0],[90,100])]],
+    N: [[poly([15,100],[15,0],[85,100],[85,0])]],
+    O: [[ell(50,50,39,49)]],
+    P: [[poly([18,100],[18,0]), arc(18,27,35,27,-PI/2,PI/2,16)]],
+    Q: [[ell(50,48,39,46), poly([59,70],[91,100])]],
+    R: [[poly([18,100],[18,0]), arc(18,27,35,27,-PI/2,PI/2,16), poly([45,53],[88,100])]],
+    S: [[poly([84,10],[65,0],[35,0],[14,18],[24,39],[70,60],[85,80],[65,100],[28,100],[10,90])]],
+    T: [[poly([8,0],[92,0]), poly([50,0],[50,100])]],
+    U: [[poly([14,0],[14,70],[22,91],[50,100],[78,91],[86,70],[86,0])]],
+    V: [[poly([10,0],[50,100],[90,0])]],
+    W: [[poly([8,0],[25,100],[50,54],[75,100],[92,0])]],
+    X: [[poly([12,0],[88,100]), poly([88,0],[12,100])]],
+    Y: [[poly([10,0],[50,48],[90,0]), poly([50,48],[50,100])]],
+    Z: [[poly([12,0],[88,0],[12,100],[88,100])]],
+    a: [[ell(43,62,26,30), poly([69,37],[69,94])]],
+    b: [[poly([27,0],[27,96]), ell(54,65,27,29)]],
+    c: [[arc(50,62,29,30,PI/3,2*PI-PI/3,18)]],
+    d: [[ell(43,62,26,30), poly([69,0],[69,96])]],
+    e: [[arc(50,62,29,30,PI/3,2*PI-PI/3,18), poly([24,61],[72,58])]],
+    f: [[poly([68,8],[55,0],[42,8],[38,34],[38,100]), poly([19,42],[62,42])]],
+    g: [[ell(43,57,25,27), poly([68,36],[68,87],[59,99],[39,100])]],
+    h: [[poly([26,0],[26,100]), poly([27,53],[41,34],[57,31],[70,45],[70,100])]],
+    i: [[poly([50,40],[50,96]), ell(50,16,3.5,3.5)]],
+    j: [[poly([61,38],[61,88],[52,100],[38,98]), ell(61,14,3.5,3.5)]],
+    k: [[poly([28,0],[28,100]), poly([72,38],[31,66],[76,96])]],
+    l: [[poly([50,0],[50,100])]],
+    m: [[poly([16,96],[16,38],[28,28],[40,36],[42,96]), poly([42,44],[54,29],[68,35],[73,47],[73,96]), poly([73,46],[84,33],[94,40],[96,96])]],
+    n: [[poly([24,96],[24,38],[36,28],[52,32],[66,45],[66,96])]],
+    o: [[ell(50,62,28,31)]],
+    p: [[poly([25,34],[25,100]), ell(52,57,27,27)]],
+    q: [[ell(43,58,27,28), poly([70,37],[70,100])]],
+    r: [[poly([27,96],[27,38],[39,28],[53,34])]],
+    s: [[poly([73,39],[59,30],[39,33],[29,45],[42,57],[62,65],[72,77],[61,91],[40,94],[27,86])]],
+    t: [[poly([48,13],[48,85],[58,96],[70,91]), poly([29,41],[68,41])]],
+    u: [[poly([25,38],[25,73],[34,91],[49,95],[65,82],[65,38]), poly([65,78],[65,96])]],
+    v: [[poly([20,38],[48,96],[78,38])]],
+    w: [[poly([14,39],[29,96],[48,60],[67,96],[88,39])]],
+    x: [[poly([25,38],[75,96]), poly([75,38],[25,96])]],
+    y: [[poly([20,38],[48,93],[71,39]), poly([71,39],[55,82],[43,100],[29,98])]],
+    z: [[poly([25,40],[76,40],[28,94],[78,94])]],
+  };
+
+  function addAccent(base, kind, upper) {
+    const source = ALPHA[base] || [];
+    return source.map((variant) => {
+      const sourceStrokes = base.toLowerCase() === 'i' && !upper ? variant.slice(0, 1) : variant;
+      const body = sourceStrokes.map(st => st.map(([x,y]) => [10 + x * 0.8, 22 + y * 0.76]));
+      let mark;
+      if (kind === 'acute') mark = poly([53,18],[67,2]);
+      else if (kind === 'grave') mark = poly([67,18],[53,2]);
+      else if (kind === 'circ') mark = poly([40,18],[50,3],[60,18]);
+      else if (kind === 'tilde') mark = poly([38,12],[46,4],[55,12],[64,4]);
+      else if (kind === 'umlaut') { body.push(poly([43,12],[43,12]), poly([61,12],[61,12])); return body; }
+      else if (kind === 'cedilla') { body.push(poly([54,88],[48,95],[57,100])); return body; }
+      if (upper) mark = mark.map(([x,y]) => [x, y * 0.75 + 2]);
+      body.push(mark);
+      return body;
+    });
+  }
+  for (const [ch, base, kind] of [
+    ['á','a','acute'],['à','a','grave'],['â','a','circ'],['ã','a','tilde'],
+    ['é','e','acute'],['ê','e','circ'],['í','i','acute'],['ó','o','acute'],
+    ['ô','o','circ'],['õ','o','tilde'],['ú','u','acute'],['ü','u','umlaut'],['ç','c','cedilla']
+  ]) ALPHA[ch] = addAccent(base, kind, false);
+  for (const [ch, base, kind] of [
+    ['Á','A','acute'],['À','A','grave'],['Â','A','circ'],['Ã','A','tilde'],
+    ['É','E','acute'],['Ê','E','circ'],['Í','I','acute'],['Ó','O','acute'],
+    ['Ô','O','circ'],['Õ','O','tilde'],['Ú','U','acute'],['Ü','U','umlaut'],['Ç','C','cedilla']
+  ]) ALPHA[ch] = addAccent(base, kind, true);
+
+  let builtinCache = null;
+  function builtin() {
+    if (!builtinCache) {
+      builtinCache = [];
+      const all = { ...B, ...ALPHA };
+      for (const ch in all) all[ch].forEach((v, i) => builtinCache.push({ ch, cloud: cloud(v), strokeCount: v.length, variant: i, user: false }));
+    }
+    return builtinCache;
+  }
+  /* train: { letra: [ amostra, amostra ] }, cada amostra é uma lista de traços.
+     Amostras do usuário vêm primeiro: costumam ganhar, e isso poda mais cedo as outras. */
+  function templates(train) {
+    const t = [];
+    for (const ch in train || {}) {
+      for (const s of train[ch] || []) {
+        const c = cloud(s);
+        if (c) t.push({ ch, cloud: c, user: true });
+      }
+    }
+    return t.concat(builtin());
+  }
+  // Distância simétrica rápida (Chamfer). Evita a busca cúbica do algoritmo guloso,
+  // que podia congelar a folha quando havia muitas amostras de treinamento.
+  function fastCloudDistance(a, b) {
+    if (!a || !b || !a.length || !b.length) return 1e9;
+    let sum = 0;
+    for (const p of a) {
+      let best = 1e9;
+      for (const q of b) { const d = Math.hypot(p.x - q.x, p.y - q.y); if (d < best) best = d; }
+      sum += best;
+    }
+    for (const p of b) {
+      let best = 1e9;
+      for (const q of a) { const d = Math.hypot(p.x - q.x, p.y - q.y); if (d < best) best = d; }
+      sum += best;
+    }
+    return (sum / (a.length + b.length)) * 16.5;
+  }
+  function ranked(strokes, tpls, limit = 8) {
+    const c = cloud(strokes);
+    if (!c) return [];
+    const byChar = new Map();
+    for (const t of tpls || []) {
+      if (!t || !t.cloud || !t.ch) continue;
+      const ch = String(t.ch);
+      const d = fastCloudDistance(c, t.cloud) * (t.user ? 0.82 : 1);
+      if (!byChar.has(ch) || d < byChar.get(ch)) byChar.set(ch, d);
+    }
+    return [...byChar.entries()].map(([ch, dist]) => ({ ch, dist }))
+      .sort((a, b) => a.dist - b.dist).slice(0, Math.max(1, limit));
+  }
+  function match(strokes, tpls) {
+    const list = ranked(strokes, tpls, Math.max(8, (tpls || []).length));
+    if (!list.length) return null;
+    const best = list[0], second = list.find((x) => x.ch !== best.ch);
+    const margin = second ? second.dist - best.dist : Infinity;
+    const ambiguous = !!second && margin < Math.max(0.012, best.dist * 0.035);
+    return { ch: best.ch, dist: best.dist, margin, ambiguous, alternative: second ? second.ch : null };
+  }
+  /* guarda uma amostra em caixa de 0 a 1, com 3 casas */
+  function normStrokes(strokes) {
+    let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
+    strokes.forEach((s) => s.forEach((p) => {
+      if (p[0] < x1) x1 = p[0];
+      if (p[1] < y1) y1 = p[1];
+      if (p[0] > x2) x2 = p[0];
+      if (p[1] > y2) y2 = p[1];
+    }));
+    const s = Math.max(x2 - x1, y2 - y1) || 1;
+    return strokes
+      .filter((st) => st.length)
+      .map((st) => {
+        const out = [];
+        let last = null;
+        for (const p of st) {
+          const q = [Math.round(((p[0] - x1) / s) * 1000) / 1000, Math.round(((p[1] - y1) / s) * 1000) / 1000];
+          if (!last || Math.hypot(q[0] - last[0], q[1] - last[1]) > 0.012) { out.push(q); last = q; }
+        }
+        return out;
+      });
+  }
+  return { cloud, match, ranked, templates, normStrokes, builtin, B, greedy };
+})();
+if (typeof module !== 'undefined') module.exports = Recog;
+</script>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"'`]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[c]));
+const uid = () => Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+/* ---------- ícones ---------- */
+const IC = {
+  back: '<path d="M15 5l-7 7 7 7"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/>',
+  redo: '<path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 000 12h3"/>',
+  pen: '<path d="M4 20l1-4L16 5a2.1 2.1 0 013 3L8 19l-4 1z"/><path d="M14 7l3 3"/>',
+  hl: '<path d="M9 13l6-6 4 4-6 6H9v-4z"/><path d="M5 20h6"/><path d="M8 17l-3 3"/>',
+  underline: '<path d="M7 4v7a5 5 0 0010 0V4"/><path d="M5 21h14"/>',
+  eraser: '<path d="M8 20l-4-4a2 2 0 010-3l9-9a2 2 0 013 0l4 4a2 2 0 010 3l-8 9H8z"/><path d="M9 11l6 6"/>',
+  hand: '<path d="M8 12V6a1.5 1.5 0 013 0v5M11 11V4.5a1.5 1.5 0 013 0V11M14 11V6a1.5 1.5 0 013 0v7c0 4-2 7-6 7s-5-2-7-5l-1-2a1.5 1.5 0 012.5-1.5L8 14"/>',
+  sliders: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  dots: '<circle cx="12" cy="5" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="19" r="1.7" fill="currentColor"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M4 18l5-5 4 4 3-3 4 4"/>',
+  edit: '<path d="M4 20h4l11-11-4-4L4 16v4z"/>',
+  next: '<path d="M9 5l7 7-7 7"/>',
+  close: '<path d="M6 6l12 12M18 6L6 18"/>',
+  lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',
+  unlock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 017.5-1.5"/>',
+  clean: '<path d="M4 19l5-14 5 14M6.5 14h5"/><path d="M18 4v5M15.5 6.5h5"',
+  camera: '<path d="M4 7h3l2-3h6l2 3h3a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V9a2 2 0 012-2z"/><circle cx="12" cy="13" r="3.5"/>',
+  download: '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/>',
+  fileText: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>',
+  scanText: '<path d="M4 7V5a1 1 0 011-1h2M17 4h2a1 1 0 011 1v2M20 17v2a1 1 0 01-1 1h-2M7 20H5a1 1 0 01-1-1v-2"/><path d="M7 9h10M7 12h10M7 15h7"/>',
+  columns: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18M3 12h9"/>',
+};
+const icon = (n) => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
+
+/* ---------- constantes e estado ---------- */
+const PW = 920;            // largura lógica da folha
+const PH0 = 1301;          // altura de uma folha (proporção A4)
+const THR = 1.02;          // acima disso o traço fica como você escreveu
+const TYPES = { pautada: 'Pautada', lisa: 'Lisa', pontilhada: 'Pontilhada', quadriculada: 'Quadriculada' };
+const COLORS = ['ink', 'blue', 'red', 'green', 'yellow'];
+const CNAME = { ink: 'Preto', blue: 'Azul', red: 'Vermelho', green: 'Verde', yellow: 'Amarelo' };
+const COVERS = ['#2457D6', '#1D8A4C', '#D23B30', '#E8A317', '#6B4BC8', '#1B2430', '#D9487B', '#0F8F9C'];
+const SIZES = { pen: [1.6, 2.6, 4], hl: [12, 18, 28], line: [1.6, 2.6, 4] };
+const S = { nbs: [], settings: { cm: 38, delay: 1600, finger: true, lock: false, lines: 1, penBtn: 'hold', recognizeStraight: false, snapBaseline: true }, train: {}, nb: null, pi: 0,
+  tool: 'pen', col: { pen: 'ink', hl: 'yellow', line: 'red' }, sizeIdx: 1, convert: true };
+const pages = new Map();
+const hist = new Map();
+let page = null, tpls = [], pending = [], convTimer = 0, penSeen = false, palCache = null;
+let viewZoom = 1;
+let lastAutoWord = null;
+let dirtyMeta = false, saveTimer = 0, saveState = 'saved';
+const dirtyPages = new Set();
+const coverDirty = new Set();   // capas em foto: cada uma é guardada em 'cover:<id>' (fora do documento meta)
+
+/* ---------- armazenamento (IndexedDB, com cópia em memória; um banco por usuário) ---------- */
+const DB = (() => {
+  let db = null;
+  const mem = new Map();
+  const open = (name) => new Promise((res) => {
+    try {
+      const r = indexedDB.open(name, 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('kv');
+      r.onsuccess = () => { db = r.result; res(true); };
+      r.onerror = () => res(false);
+      r.onblocked = () => res(false);
+    } catch (e) { res(false); }
+  });
+  const get = (k) => new Promise((res) => {
+    if (!db) return res(mem.get(k));
+    try {
+      const q = db.transaction('kv').objectStore('kv').get(k);
+      q.onsuccess = () => res(q.result);
+      q.onerror = () => res(mem.get(k));
+    } catch (e) { res(mem.get(k)); }
+  });
+  /* fromCloud = true quando o dado veio da nuvem: grava local sem reenviar (evita eco) */
+  const set = (k, v, fromCloud) => {
+    mem.set(k, v);
+    if (!fromCloud && window.LL_cloud) window.LL_cloud.push(k, v);
+    if (!db) return Promise.resolve(false);
+    return new Promise((res) => {
+      try {
+        const t = db.transaction('kv', 'readwrite');
+        t.objectStore('kv').put(v, k);
+        t.oncomplete = () => res(true);
+        t.onerror = () => res(false);
+        t.onabort = () => res(false);
+      } catch (e) { res(false); }
+    });
+  };
+  const del = (k, fromCloud) => {
+    mem.delete(k);
+    if (!fromCloud && window.LL_cloud) window.LL_cloud.remove(k);
+    if (!db) return Promise.resolve(false);
+    return new Promise((res) => {
+      try {
+        const t = db.transaction('kv', 'readwrite');
+        t.objectStore('kv').delete(k);
+        t.oncomplete = () => res(true);
+        t.onerror = () => res(false);
+        t.onabort = () => res(false);
+      } catch (e) { res(false); }
+    });
+  };
+  const keys = () => new Promise((res) => {
+    if (!db) return res([...mem.keys()]);
+    try {
+      const q = db.transaction('kv').objectStore('kv').getAllKeys();
+      q.onsuccess = () => res(q.result);
+      q.onerror = () => res([]);
+    } catch (e) { res([]); }
+  });
+  return { open, get, set, del, keys, get ok() { return !!db; } };
+})();
+
+/* banco antigo (sem usuário): o primeiro usuário a entrar herda o conteúdo, uma única vez */
+function legacyAll() {
+  return new Promise((res) => {
+    try {
+      const r = indexedDB.open('letra-limpa', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('kv');
+      r.onerror = () => res([]);
+      r.onsuccess = () => {
+        const db = r.result;
+        try {
+          const out = [];
+          const c = db.transaction('kv').objectStore('kv').openCursor();
+          c.onsuccess = () => { const cur = c.result; if (cur) { out.push([cur.key, cur.value]); cur.continue(); } else { db.close(); res(out); } };
+          c.onerror = () => { db.close(); res([]); };
+        } catch (e) { db.close(); res([]); }
+      };
+    } catch (e) { res([]); }
+  });
+}
+async function migrateLegacy() {
+  try {
+    if (localStorage.getItem('ll-legacy')) return;
+    localStorage.setItem('ll-legacy', window.LL_uid || '1');
+    if ((await DB.keys()).length) return;
+    for (const [k, v] of await legacyAll()) await DB.set(k, v);
+  } catch (e) { /* sem migração, sem problema */ }
+}
+
+function syncTxt() {
+  const s = window.LL_sync;
+  return s === 'big' ? ' · folha grande demais p/ nuvem' : s === 'wait' ? ' · enviando…' : s === 'err' ? ' · sem sincronizar' : '';
+}
+function setSave(st) {
+  saveState = st;
+  const el = $('#saved');
+  const ind = $('#save-indicator');
+  if (!el) return;
+  if (st === 'saving') {
+    el.textContent = 'Salvando...';
+    if (ind) ind.className = 'status-indicator saving';
+  } else if (st === 'saved') {
+    el.textContent = 'Salvo' + syncTxt();
+    if (ind) ind.className = 'status-indicator' + (window.LL_sync === 'err' || window.LL_sync === 'big' ? ' error' : '');
+  } else if (st === 'mem') {
+    el.textContent = 'Só nesta sessão';
+    if (ind) ind.className = 'status-indicator saving';
+  } else {
+    el.textContent = 'Erro ao salvar';
+    if (ind) ind.className = 'status-indicator error';
+  }
+}
+window.LL_onSync = () => { if (saveState === 'saved') setSave('saved'); };
+function saveSoon() { setSave('saving'); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 600); }
+function markMeta() { dirtyMeta = true; saveSoon(); }
+function markPage() { if (page) dirtyPages.add(page.id); saveSoon(); }
+/* versão do caderno sem a foto da capa (a foto vai em 'cover:<id>') */
+const slimNb = (nb) => (nb.cover && nb.cover.kind === 'photo' ? { ...nb, cover: { kind: 'photo' } } : nb);
+/* todas as gravações são disparadas no mesmo instante (sem await no meio),
+   assim funciona também quando a aba está sendo fechada */
+async function flush() {
+  saveTimer = 0;
+  try {
+    const jobs = [];
+    if (dirtyPages.size && S.nb) { S.nb.updated = Date.now(); dirtyMeta = true; }
+    for (const id of [...coverDirty]) {
+      const nb = S.nbs.find((x) => x.id === id);
+      jobs.push(nb && nb.cover && nb.cover.kind === 'photo' && nb.cover.data ? DB.set('cover:' + id, nb.cover.data) : DB.del('cover:' + id));
+      coverDirty.delete(id);
+    }
+    if (dirtyMeta) { jobs.push(DB.set('meta', { v: 1, nbs: S.nbs.map(slimNb), settings: S.settings, train: S.train })); dirtyMeta = false; }
+    for (const id of [...dirtyPages]) {
+      const p = pages.get(id);
+      if (p) jobs.push(DB.set('page:' + id, p));
+      dirtyPages.delete(id);
+    }
+    await Promise.all(jobs);
+    if (!dirtyPages.size && !dirtyMeta && !saveTimer) setSave(DB.ok ? 'saved' : 'mem');
+    else setSave('saving');
+  } catch (e) { setSave('err'); }
+}
+
+/* ---------- fundo da folha ---------- */
+function bgFor(type, g, s) {
+  const dot = Math.max(1.2, 1.5 * Math.max(s, 0.8));
+  if (type === 'pautada') {
+    const m = g * 2.2;
+    return {
+      img: `linear-gradient(90deg, transparent ${m - 1}px, var(--margin) ${m - 1}px, var(--margin) ${m + 0.5}px, transparent ${m + 0.5}px), linear-gradient(to bottom, transparent calc(100% - 1.5px), var(--rule) calc(100% - 1.5px))`,
+      size: `100% 100%, 100% ${g}px`, pos: `0 0, 0 0`, rep: 'no-repeat, repeat',
+    };
+  }
+  if (type === 'pontilhada') return { img: `radial-gradient(circle at 50% 50%, var(--dot) 0, var(--dot) ${dot}px, transparent ${dot + 0.5}px)`, size: `${g}px ${g}px`, pos: '0 0', rep: 'repeat' };
+  if (type === 'quadriculada') return { img: 'linear-gradient(to bottom, transparent calc(100% - 1px), var(--rule) calc(100% - 1px)), linear-gradient(to right, transparent calc(100% - 1px), var(--rule) calc(100% - 1px))', size: `${g}px ${g}px`, pos: '0 0', rep: 'repeat' };
+  return { img: 'none', size: 'auto', pos: '0 0', rep: 'repeat' };
+}
+const bgCss = (type, g) => { const b = bgFor(type, g, 1); return `background-image:${b.img};background-size:${b.size};background-position:${b.pos};background-repeat:${b.rep}`; };
+function zoneList(p) {
+  if (p && Array.isArray(p.zones) && p.zones.length > 1) return p.zones.filter((z) => z && TYPES[z.type]).map((z) => ({ type:z.type, weight:clamp(+z.weight || 1, 1, 100) }));
+  return [{ type: p && TYPES[p.type] ? p.type : 'pautada', weight: 1 }];
+}
+function pageTypeLabel(p) { return p && Array.isArray(p.zones) && p.zones.length > 1 ? 'Mista' : (TYPES[p && p.type] || 'Pautada'); }
+
+/* ---------- desenho ---------- */
+const C = { cv: null, ctx: null, s: 1, k: 1, ro: null, bk: null };
+const ctx0 = document.createElement('canvas').getContext('2d');
+const FONT = 'Figtree, system-ui, sans-serif';
+const metr = new Map();
+function palette() {
+  if (palCache) return palCache;
+  const cs = getComputedStyle(document.documentElement);
+  const v = (n) => cs.getPropertyValue(n).trim();
+  palCache = { ink: v('--ink'), blue: v('--c-blue'), red: v('--c-red'), green: v('--c-green'), yellow: v('--c-yellow'), guide: 'rgba(115, 130, 148, 0.40)' };
+  return palCache;
+}
+function inkBox(ch) {
+  let m = metr.get(ch);
+  if (m) return m;
+  ctx0.font = '500 100px ' + FONT;
+  const t = ctx0.measureText(ch);
+  m = { l: -t.actualBoundingBoxLeft, t: -t.actualBoundingBoxAscent, r: t.actualBoundingBoxRight, b: t.actualBoundingBoxDescent };
+  m.w = Math.max(1, m.r - m.l);
+  m.h = Math.max(1, m.b - m.t);
+  metr.set(ch, m);
+  return m;
+}
+function strokePath(ctx, p) {
+  const n = p.length / 2;
+  ctx.beginPath();
+  if (n === 1) { ctx.arc(p[0], p[1], ctx.lineWidth / 2, 0, 6.2832); ctx.fillStyle = ctx.strokeStyle; ctx.fill(); return; }
+  ctx.moveTo(p[0], p[1]);
+  if (n === 2) { ctx.lineTo(p[2], p[3]); ctx.stroke(); return; }
+  for (let i = 1; i < n - 1; i++) {
+    const mx = (p[i * 2] + p[i * 2 + 2]) / 2, my = (p[i * 2 + 1] + p[i * 2 + 3]) / 2;
+    ctx.quadraticCurveTo(p[i * 2], p[i * 2 + 1], mx, my);
+  }
+  ctx.lineTo(p[n * 2 - 2], p[n * 2 - 1]);
+  ctx.stroke();
+}
+function lineTo(ctx, a, b, c, d) { ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(c, d); ctx.stroke(); }
+function drawGlyph(ctx, g, col) {
+  const ch = g.ch;
+  const w = Math.max(g.w, 6), h = Math.max(g.h, 6), x = g.x, y = g.y;
+  const cx = x + w / 2, cy = y + h / 2;
+  ctx.save();
+  ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.lineWidth = clamp(Math.max(w, h) * 0.09, 2, 4.5);
+  if (ch === '-') lineTo(ctx, x, cy, x + w, cy);
+  else if (ch === '=') { const hh = Math.max(h, ctx.lineWidth * 5); lineTo(ctx, x, cy - hh * 0.22, x + w, cy - hh * 0.22); lineTo(ctx, x, cy + hh * 0.22, x + w, cy + hh * 0.22); }
+  else if (ch === '+') { lineTo(ctx, x, cy, x + w, cy); lineTo(ctx, cx, y, cx, y + h); }
+  else if (ch === '/') lineTo(ctx, x + w, y, x, y + h);
+  else if (ch === '(') { ctx.beginPath(); ctx.moveTo(x + w, y); ctx.quadraticCurveTo(x - w * 0.25, cy, x + w, y + h); ctx.stroke(); }
+  else if (ch === ')') { ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + w * 1.25, cy, x, y + h); ctx.stroke(); }
+  else if (ch === '.') { ctx.beginPath(); ctx.arc(cx, cy, Math.max(ctx.lineWidth * 0.8, Math.min(w, h) / 2), 0, 6.2832); ctx.fill(); }
+  else if (ch === ',') { ctx.beginPath(); ctx.arc(cx, y + ctx.lineWidth * 1.2, ctx.lineWidth * 1.1, 0, 6.2832); ctx.fill(); lineTo(ctx, cx, y + ctx.lineWidth, cx - w * 0.4, y + h); }
+  else {
+    const m = inkBox(ch);
+    const a0 = m.w / m.h;
+    let bw = w, bx = x;
+    const lo = 0.6 * a0 * h, hi = 1.7 * a0 * h;
+    if (bw < lo) { bw = lo; bx = cx - bw / 2; } else if (bw > hi) { bw = hi; bx = cx - bw / 2; }
+    ctx.font = g.script === 'cursive' ? 'italic 500 100px \"Comic Sans MS\", \"Segoe Print\", cursive' : '500 100px ' + FONT;
+    ctx.textBaseline = 'alphabetic';
+    ctx.translate(bx, y);
+    ctx.scale(bw / m.w, h / m.h);
+    ctx.translate(-m.l, -m.t);
+    ctx.fillText(ch, 0, 0);
+  }
+  ctx.restore();
+}
+function drawItem(ctx, it, pal) {
+  const col = pal[it.c] || pal.ink;
+  if (it.k === 's') {
+    ctx.save();
+    ctx.strokeStyle = col; ctx.lineWidth = it.w; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    if (it.hl) ctx.globalAlpha = 0.42;
+    strokePath(ctx, it.p);
+    ctx.restore();
+  } else if (it.k === 'l') {
+    ctx.save();
+    ctx.strokeStyle = col; ctx.lineWidth = it.w; ctx.lineCap = 'round';
+    lineTo(ctx, it.x1, it.y1, it.x2, it.y2);
+    ctx.restore();
+  } else if (it.k === 'g') drawGlyph(ctx, it, col);
+}
+let live = null, rafId = 0;
+/* Camada de fundo: tudo o que já está confirmado fica num canvas fora da tela.
+   Itens novos (que não são marca-texto) são só acrescentados; o resto é refeito
+   apenas quando a lista, o tamanho ou as cores mudam. */
+function baseLayer() {
+  const { cv } = C, bk = C.bk, items = page.items;
+  const same = bk && bk.id === page.id && bk.w === cv.width && bk.h === cv.height && bk.items === items;
+  if (same && bk.len === items.length) return bk.cv;
+  if (same && items.length > bk.len) {
+    let ok = true;
+    for (let i = bk.len; i < items.length; i++) if (items[i].hl) { ok = false; break; }
+    if (ok) {
+      const x = bk.cv.getContext('2d'), pal = palette();
+      x.setTransform(C.k, 0, 0, C.k, 0, 0);
+      for (let i = bk.len; i < items.length; i++) drawItem(x, items[i], pal);
+      bk.len = items.length;
+      return bk.cv;
+    }
+  }
+  const oc = (bk && bk.cv) || document.createElement('canvas');
+  oc.width = cv.width; oc.height = cv.height;
+  const x = oc.getContext('2d');
+  const pal = palette();
+  x.setTransform(C.k, 0, 0, C.k, 0, 0);
+  for (const it of items) if (it.hl) drawItem(x, it, pal);
+  for (const it of items) if (!it.hl) drawItem(x, it, pal);
+  C.bk = { cv: oc, items, len: items.length, id: page.id, w: cv.width, h: cv.height };
+  return oc;
+}
+function redraw() {
+  const { cv, ctx } = C;
+  if (!cv || !page) return;
+  const pal = palette();
+  const base = baseLayer();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.drawImage(base, 0, 0);
+  if (live && live.tool !== 'eraser') {
+    const it = liveItem();
+    if (it) {
+      ctx.setTransform(C.k, 0, 0, C.k, 0, 0);
+      drawItem(ctx, it, pal);
+    }
+  }
+}
+function schedule() { if (!rafId) rafId = requestAnimationFrame(() => { rafId = 0; redraw(); }); }
+function liveItem() {
+  if (!live || !live.pts.length) return null;
+  if (live.tool === 'line') {
+    const a = live.pts[0], b = live.pts[live.pts.length - 1];
+    return { k: 'l', c: live.c, w: live.w, x1: a[0], y1: a[1], x2: b[0], y2: b[1] };
+  }
+  const p = [];
+  live.pts.forEach((q) => p.push(q[0], q[1]));
+  return { k: 's', c: live.c, w: live.w, p, hl: live.tool === 'hl' };
+}
+function layout() {
+  if (!C.cv || !page) return;
+  const st = $('#stage');
+  const avail = Math.max(240, st.clientWidth - 24);
+  const fitScale = Math.min(1, avail / PW);
+  const s = fitScale * viewZoom;
+  // Limita a resolução interna para que ampliar a folha não consuma memória excessiva.
+  const dpr = Math.min(window.devicePixelRatio || 1, 2.5 / s);
+  const w = PW * s, h = page.h * s;
+  const cw = Math.round(w * dpr), ch = Math.round(h * dpr);
+  /* só mexe no canvas se algo mudou de verdade (evita apagar e refazer à toa) */
+  if (C.s === s && C.k === s * dpr && C.cv.width === cw && C.cv.height === ch && C.cv.style.width === w + 'px') return;
+  C.s = s; C.k = s * dpr;
+  const sh = $('#sheet');
+  sh.style.width = w + 'px'; sh.style.height = h + 'px';
+  C.cv.style.width = w + 'px'; C.cv.style.height = h + 'px';
+  C.cv.width = cw; C.cv.height = ch;
+  C.bk = null;
+  applyBg();
+  redraw();
+}
+function applyBg() {
+  const sh = $('#sheet');
+  if (!sh || !page) return;
+  const zl = $('#page-zones');
+  const zones = zoneList(page);
+  if (zl && zones.length > 1) {
+    sh.style.backgroundImage = 'none';
+    const total = zones.reduce((a,z) => a + z.weight, 0) || zones.length;
+    let top = 0;
+    zl.innerHTML = zones.map((z, i) => {
+      const h = i === zones.length - 1 ? 100 - top : (z.weight / total * 100);
+      const html = `<div class="zone-bg" style="top:${top}%;height:${h}%;${bgCss(z.type, S.settings.cm * C.s)}"></div>`;
+      top += h; return html;
+    }).join('');
+  } else {
+    if (zl) zl.innerHTML = '';
+    const b = bgFor(page.type, S.settings.cm * C.s, C.s);
+    sh.style.backgroundImage = b.img; sh.style.backgroundSize = b.size;
+    sh.style.backgroundPosition = b.pos; sh.style.backgroundRepeat = b.rep;
+  }
+}
+
+/* ---------- histórico ---------- */
+const H = () => { if (!hist.has(page.id)) hist.set(page.id, { u: [], r: [] }); return hist.get(page.id); };
+function commit(a) { const h = H(); h.u.push(a); if (h.u.length > 200) h.u.shift(); h.r = []; markPage(); updateNav(); }
+function cancelPending() { clearTimeout(convTimer); pending = []; }
+function undo() {
+  if (!page) return;
+  cancelPending();
+  const h = H(), a = h.u.pop();
+  if (!a) return;
+  page.items = page.items.filter((i) => !a.add.includes(i)).concat(a.rem);
+  h.r.push(a); markPage(); redraw(); updateNav();
+}
+function redo() {
+  if (!page) return;
+  cancelPending();
+  const h = H(), a = h.r.pop();
+  if (!a) return;
+  page.items = page.items.filter((i) => !a.rem.includes(i)).concat(a.add);
+  h.u.push(a); markPage(); redraw(); updateNav();
+}
+
+/* ---------- geometria ---------- */
+function bboxOf(it) {
+  if (it.k === 'g') return { x1: it.x, y1: it.y, x2: it.x + it.w, y2: it.y + it.h };
+  if (it.k === 'l') return { x1: Math.min(it.x1, it.x2), y1: Math.min(it.y1, it.y2), x2: Math.max(it.x1, it.x2), y2: Math.max(it.y1, it.y2) };
+  let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
+  for (let i = 0; i < it.p.length; i += 2) {
+    const x = it.p[i], y = it.p[i + 1];
+    if (x < x1) x1 = x;
+    if (y < y1) y1 = y;
+    if (x > x2) x2 = x;
+    if (y > y2) y2 = y;
+  }
+  return { x1, y1, x2, y2 };
+}
+function segDist(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1, dy = y2 - y1, l2 = dx * dx + dy * dy;
+  let t = l2 ? ((px - x1) * dx + (py - y1) * dy) / l2 : 0;
+  t = clamp(t, 0, 1);
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
+function hit(it, x, y, r) {
+  if (it && it.guide) return false;
+  const b = bboxOf(it);
+  const pad = r + (it.k === 'g' ? 0 : it.w) / 2;
+  if (x < b.x1 - pad || x > b.x2 + pad || y < b.y1 - pad || y > b.y2 + pad) return false;
+  if (it.k === 'g') return true;
+  if (it.k === 'l') return segDist(x, y, it.x1, it.y1, it.x2, it.y2) <= pad;
+  const p = it.p;
+  if (p.length === 2) return Math.hypot(x - p[0], y - p[1]) <= pad;
+  for (let i = 2; i < p.length; i += 2) if (segDist(x, y, p[i - 2], p[i - 1], p[i], p[i + 1]) <= pad) return true;
+  return false;
+}
+
+/* ---------- conversão da letra ---------- */
+function armTimer() { clearTimeout(convTimer); convTimer = setTimeout(convertPending, S.settings.delay); }
+function clusterStrokes(strokes) {
+  const items = strokes.map((s) => {
+    const raw = bboxOf(s), pad = Math.max(2, (Number(s.w) || 2.6) * 0.8);
+    return { s, rawB: { ...raw }, b: { x1: raw.x1 - pad, y1: raw.y1 - pad, x2: raw.x2 + pad, y2: raw.y2 + pad } };
+  }).sort((a, b) => a.b.x1 - b.b.x1);
+  const cl = [];
+  for (const it of items) {
+    let hitc = null;
+    for (const c of cl) {
+      const ov = Math.min(c.b.x2, it.b.x2) - Math.max(c.b.x1, it.b.x1);
+      const minW = Math.min(c.b.x2 - c.b.x1, it.b.x2 - it.b.x1);
+      const gap = Math.max(c.b.y1, it.b.y1) - Math.min(c.b.y2, it.b.y2);
+      const hmax = Math.max(c.b.y2 - c.b.y1, it.b.y2 - it.b.y1, S.settings.cm * 0.6);
+      if (ov > 0.5 * minW && ov > 0 && gap < 0.5 * hmax) { hitc = c; break; }
+    }
+    if (hitc) {
+      hitc.strokes.push(it.s);
+      hitc.b = { x1: Math.min(hitc.b.x1, it.b.x1), y1: Math.min(hitc.b.y1, it.b.y1), x2: Math.max(hitc.b.x2, it.b.x2), y2: Math.max(hitc.b.y2, it.b.y2) };
+      hitc.rawB = { x1: Math.min(hitc.rawB.x1, it.rawB.x1), y1: Math.min(hitc.rawB.y1, it.rawB.y1), x2: Math.max(hitc.rawB.x2, it.rawB.x2), y2: Math.max(hitc.rawB.y2, it.rawB.y2) };
+    } else cl.push({ strokes: [it.s], b: { ...it.b }, rawB: { ...it.rawB } });
+  }
+  return cl;
+}
+function recognizeGroup(c) {
+  const G = S.settings.cm;
+  const w = c.b.x2 - c.b.x1, h = c.b.y2 - c.b.y1, md = Math.max(w, h);
+  let len = 0;
+  const strokes = c.strokes.map((s) => {
+    const a = [];
+    for (let i = 0; i < s.p.length; i += 2) a.push([s.p[i], s.p[i + 1]]);
+    for (let i = 1; i < a.length; i++) len += Math.hypot(a[i][0] - a[i - 1][0], a[i][1] - a[i - 1][1]);
+    return a;
+  });
+  // Detecta toques/pontos antes do filtro de ruído; antes essa ordem descartava
+  // pontos pequenos antes que pudessem virar ponto final ou componente de i/j.
+  if (c.strokes.length === 1 && md < 0.38 * G && len < 1.1 * G) return { ch: h > 1.6 * w && h > 0.22 * G ? ',' : '.' };
+  if (md < 0.2 * G) return null;
+
+  // Evita que uma linha isolada seja confundida com 1, 2, 7, - ou /.
+  // A opção pode ser ativada nos Ajustes para quem escreve esses caracteres com um único traço.
+  if (c.strokes.length === 1 && !S.settings.recognizeStraight) {
+    const pts = strokes[0];
+    if (pts.length >= 2) {
+      const first = pts[0], last = pts[pts.length - 1];
+      const chord = Math.hypot(last[0] - first[0], last[1] - first[1]);
+      if (chord > 0 && len / chord < 1.10) return null;
+    }
+  }
+  // Uma palavra cursiva inteira não deve ser adivinhada como um único caractere.
+  if (c.strokes.length === 1 && w > Math.max(1.55 * h, 1.35 * G)) return null;
+  const r = Recog.match(strokes, characterTemplates());
+  if (!r || r.dist > THR) return null;
+  // Usa o candidato mais parecido automaticamente, mas guarda as alternativas
+  // próximas para que a pessoa possa corrigir depois com um toque.
+  return { ch: r.ch, alternatives: r.ambiguous && r.alternative ? [r.ch, r.alternative] : [r.ch] };
+}
+function characterTemplates() { return tpls.filter((t) => Array.from(String(t.ch || '')).length === 1); }
+function wordTemplates() { return tpls.filter((t) => Array.from(String(t.ch || '').trim()).length > 1); }
+function strokePoints(items) {
+  return items.map((it) => { const a = []; for (let i = 0; i < it.p.length; i += 2) a.push([it.p[i], it.p[i + 1]]); return a; }).filter((a) => a.length > 1);
+}
+function boundsOfItems(items) {
+  const bs = items.map(bboxOf);
+  return { x1: Math.min(...bs.map((b) => b.x1)), y1: Math.min(...bs.map((b) => b.y1)),
+    x2: Math.max(...bs.map((b) => b.x2)), y2: Math.max(...bs.map((b) => b.y2)) };
+}
+function recognizeWord(items) {
+  const wt = wordTemplates();
+  if (!wt.length) return null;
+  const r = Recog.match(strokePoints(items), wt);
+  if (!r || r.dist > THR || r.ambiguous) return null;
+  const text = String(r.ch || '').trim().replace(/\s+/g, ' ');
+  return text.length > 1 ? { text, dist: r.dist } : null;
+}
+function textGlyphItems(text, x, y, h, color) {
+  // textItems usa uma largura constante para espaços e um espaçamento regular entre caracteres.
+  return textItems(text, x, y, h, color);
+}
+/* tamanho em linhas: 1 linha = uma altura de quadradinho; número/maiúscula ocupa 80% disso */
+const lockH = () => 0.8 * S.settings.lines * S.settings.cm;
+function estLines(ch, b) {
+  if (!/^[0-9A-Za-z]$/.test(ch)) return null;
+  const m = inkBox(ch);
+  return ((b.y2 - b.y1) / m.h) * inkBox('0').h / (0.8 * S.settings.cm);
+}
+function fitLocked(ch, b) {
+  if (ch === '.' || ch === ',') return null;
+  const Hn = lockH(), cx = (b.x1 + b.x2) / 2, cy = (b.y1 + b.y2) / 2;
+  const sym = { '-': [0.45, 0.05], '+': [0.5, 0.5], '=': [0.5, 0.5], '/': [0.4, 1], '(': [0.3, 1.1], ')': [0.3, 1.1] }[ch];
+  if (sym) {
+    const w = sym[0] * Hn, h = Math.max(sym[1] * Hn, 6);
+    return { x1: cx - w / 2, y1: ch === '/' ? b.y2 - h : cy - h / 2, x2: cx + w / 2, y2: (ch === '/' ? b.y2 - h : cy - h / 2) + h };
+  }
+  const m = inkBox(ch), k = Hn / inkBox('0').h;
+  const base = b.y1 + ((b.y2 - b.y1) * -m.t) / m.h;   // linha de base da letra como você escreveu
+  const y = base + m.t * k;
+  return { x1: cx - (m.w * k) / 2, y1: y, x2: cx + (m.w * k) / 2, y2: y + m.h * k };
+}
+function backgroundTypeAt(y) {
+  if (!page) return 'lisa';
+  const zones = zoneList(page);
+  if (!page.zones || page.zones.length < 2) return page.type || 'lisa';
+  const total = zones.reduce((a, z) => a + z.weight, 0) || zones.length;
+  const target = clamp(y / Math.max(1, page.h), 0, 0.999999) * total;
+  let acc = 0;
+  for (const z of zones) { acc += z.weight; if (target < acc) return z.type; }
+  return zones[zones.length - 1]?.type || 'lisa';
+}
+function snapGlyphToBaseline(ch, b) {
+  if (!S.settings.snapBaseline || ch === '.' || ch === ',' || !page) return b;
+  const type = backgroundTypeAt((b.y1 + b.y2) / 2);
+  if (type !== 'pautada' && type !== 'quadriculada') return b;
+  const step = Math.max(8, Number(S.settings.cm) || 38);
+  const shift = Math.round(b.y2 / step) * step - b.y2;
+  return { x1: b.x1, x2: b.x2, y1: b.y1 + shift, y2: b.y2 + shift };
+}
+function convertPending() {
+  clearTimeout(convTimer);
+  if (!page) { pending = []; return; }
+  const inPage = new Set(page.items);
+  const strokes = pending.filter((s) => inPage.has(s));
+  pending = [];
+  if (!strokes.length) return;
+
+  // Primeiro tenta comparar o conjunto completo com palavras cursivas treinadas pelo usuário.
+  // Isso permite transformar uma palavra inteira só depois da pausa configurada.
+  const word = recognizeWord(strokes);
+  if (word) {
+    const b = boundsOfItems(strokes);
+    const rawH = Math.max(1, b.y2 - b.y1);
+    const h = clamp(rawH, 18, Math.max(32, S.settings.cm * 1.15));
+    let x = b.x1, y = b.y1;
+    const centerY = (b.y1 + b.y2) / 2;
+    const sameLine = lastAutoWord && lastAutoWord.pageId === page.id
+      && Math.abs(centerY - lastAutoWord.centerY) < Math.max(h, lastAutoWord.h) * 0.55
+      && b.x1 >= lastAutoWord.rawX1
+      && (b.x1 - lastAutoWord.rawX2) < h * 3.2;
+    if (sameLine) {
+      // Alinha palavras reconhecidas na mesma linha com um espaço padrão.
+      x = lastAutoWord.endX + h * 0.82;
+      y = lastAutoWord.centerY - h / 2;
+    }
+    const layoutWord = textGlyphItems(word.text, x, y, h, strokes[0].c);
+    const add = layoutWord.out;
+    const rem = strokes;
+    const gone = new Set(rem);
+    page.items = page.items.filter((i) => !gone.has(i)).concat(add);
+    commit({ add, rem });
+    lastAutoWord = { pageId: page.id, endX: layoutWord.end, centerY: y + h / 2, h, rawX1: b.x1, rawX2: b.x2 };
+    redraw();
+    return;
+  }
+
+  // Se for uma palavra cursiva conectada que ainda não foi treinada, não a converte
+  // em uma letra aleatória: preserva a escrita original. Letras separadas continuam
+  // podendo ser reconhecidas individualmente.
+  lastAutoWord = null;
+  const clusters = clusterStrokes(strokes);
+  const hasConnectedWordShape = clusters.length === 1 && strokes.length === 1
+    && (clusters[0].b.x2 - clusters[0].b.x1) > Math.max(1.55 * (clusters[0].b.y2 - clusters[0].b.y1), S.settings.cm * 1.35);
+  if (hasConnectedWordShape) return;
+
+  const add = [], rem = [], seen = [];
+  for (const c of clusters) {
+    const r = recognizeGroup(c);
+    if (!r) continue;
+    let b = c.rawB || c.b;
+    const e = estLines(r.ch, b);
+    if (e) seen.push(e);
+    if (S.settings.lock) { const f = fitLocked(r.ch, b); if (f) b = f; }
+    b = snapGlyphToBaseline(r.ch, b);
+    add.push({ k: 'g', ch: r.ch, alternatives: r.alternatives || [r.ch], c: c.strokes[0].c, x: b.x1, y: b.y1, w: b.x2 - b.x1, h: b.y2 - b.y1 });
+    rem.push(...c.strokes);
+  }
+  if (!add.length) return;
+  const gone = new Set(rem);
+  page.items = page.items.filter((i) => !gone.has(i)).concat(add);
+  commit({ add, rem });
+  redraw();
+  if (!S.settings.lock && seen.length) {
+    S.settings.lines = clamp(Math.round((seen.reduce((a, v) => a + v, 0) / seen.length) * 2) / 2, 0.5, 4);
+    renderTools();
+  }
+}
+function savePrefs() { S.settings.prefs = { col: S.col, sizeIdx: S.sizeIdx, convert: S.convert }; markMeta(); }
+
+/* ---------- botão da S Pen ---------- */
+let lastBtn = false;
+// Navegadores costumam informar o botão lateral como bit 2 ou 4 em `buttons`;
+// alguns dispositivos também expõem `button` como 2 ou 5 no evento de pressionar.
+const barrel = (e) => e.pointerType === 'pen' && (((Number(e.buttons) || 0) & 6) !== 0 || e.button === 2 || e.button === 5);
+const penRequestsEraser = (e) => e.pointerType === 'pen' && (((Number(e.buttons) || 0) & 32) !== 0 || (S.settings.penBtn === 'hold' && barrel(e)));
+function penButton(e) {
+  if (e.pointerType !== 'pen') return;
+  const b = barrel(e), edge = b && !lastBtn;
+  lastBtn = b;
+  if (!edge) return;
+  const m = S.settings.penBtn;
+  if (m === 'swap') {
+    if (S.tool === 'eraser') S.tool = S.prevTool || 'pen'; else { S.prevTool = S.tool; S.tool = 'eraser'; }
+    renderTools();
+  } else if (m === 'lock') { S.settings.lock = !S.settings.lock; markMeta(); renderTools(); }
+}
+function penTest(e) {
+  if (e.pointerType !== 'pen') return;
+  const el = $('#pentest');
+  if (!el) return;
+  el.textContent = `Caneta detectada. Botão da lateral: ${barrel(e) ? 'APERTADO' : 'solto'} (buttons=${e.buttons}).`;
+}
+document.addEventListener('pointermove', penTest, true);
+document.addEventListener('pointerdown', penTest, true);
+
+/* ---------- ponteiro: caneta, marca-texto, sublinhar, borracha, selecionar, rolar ---------- */
+const ptrs = new Map();
+let gesture = null, lastC = null, tap = null;
+function posOf(e) {
+  const r = C.cv.getBoundingClientRect();
+  const s = r.width / PW || 1;
+  return [(e.clientX - r.left) / s, (e.clientY - r.top) / s];
+}
+const centroid = () => {
+  let x = 0, y = 0;
+  ptrs.forEach((p) => { x += p.x; y += p.y; });
+  const n = ptrs.size || 1;
+  return [x / n, y / n];
+};
+function onDown(e) {
+  if (!page) return;
+  if (e.pointerType === 'pen') { penSeen = true; penButton(e); }
+  e.preventDefault();
+  ptrs.set(e.pointerId, { type: e.pointerType, x: e.clientX, y: e.clientY });
+  try { C.cv.setPointerCapture(e.pointerId); } catch (_) {}
+  // A partir do segundo ponteiro (pinça, palma ou segundo dedo), cancela o traço
+  // ainda não finalizado e bloqueia a interação até todos os ponteiros saírem.
+  // O zoom continua disponível pelos botões +/−, sem zoom acidental por pinça.
+  if (ptrs.size >= 2) {
+    if (live && live.tool === 'eraser' && live.removed && live.removed.length) commit({ add: [], rem: live.removed });
+    live = null; tap = null; gesture = 'multitouch-block'; lastC = null; redraw(); return;
+  }
+  if (gesture === 'multitouch-block') return;
+  tap = S.tool === 'select' ? { id: e.pointerId, cx: e.clientX, cy: e.clientY, t: Date.now(), pos: posOf(e) } : null;
+  const touchOut = e.pointerType === 'touch' && (penSeen || !S.settings.finger);
+  if (S.tool === 'hand' || touchOut) { gesture = 'scroll'; lastC = centroid(); return; }
+  if (gesture === 'scroll') { lastC = centroid(); return; }
+  clearTimeout(convTimer);
+  const [x, y] = posOf(e);
+  const t = penRequestsEraser(e) ? 'eraser' : S.tool;
+  /* "Selecionar/Corrigir": toque num caractere para corrigir; arrastar rola a folha */
+  if (t !== 'eraser' && !SIZES[t]) { gesture = 'scroll'; lastC = centroid(); return; }
+  if (t === 'eraser') { live = { tool: 'eraser', id: e.pointerId, removed: [], pts: [] }; eraseAt(x, y); gesture = 'draw'; return; }
+  live = { tool: t, id: e.pointerId, pts: [[x, y]], c: S.col[t], w: SIZES[t][S.sizeIdx] };
+  gesture = 'draw';
+  schedule();
+}
+function onMove(e) {
+  penButton(e);
+  const p = ptrs.get(e.pointerId);
+  if (!p) return;
+  p.x = e.clientX; p.y = e.clientY;
+  if (gesture === 'multitouch-block') return;
+  if (gesture === 'scroll') {
+    const c = centroid();
+    if (lastC) { const st = $('#stage'); st.scrollTop -= c[1] - lastC[1]; st.scrollLeft -= c[0] - lastC[0]; }
+    lastC = c;
+    return;
+  }
+  // No modo "segurar = borracha", acompanha o botão mesmo se ele for pressionado
+  // ou solto durante um traço, sem exigir levantar a S Pen da tela.
+  if (e.pointerType === 'pen' && S.settings.penBtn === 'hold' && live && live.id === e.pointerId && gesture === 'draw') {
+    const wantsErase = barrel(e) || (((Number(e.buttons) || 0) & 32) !== 0);
+    if (wantsErase && live.tool !== 'eraser') {
+      const previous = live; live = null;
+      if (previous.pts && previous.pts.length) finishStroke(previous);
+      const xy = posOf(e);
+      live = { tool: 'eraser', id: e.pointerId, removed: [], pts: [] };
+      eraseAt(xy[0], xy[1]);
+    } else if (!wantsErase && live.tool === 'eraser') {
+      const previous = live; live = null;
+      if (previous.removed.length) commit({ add: [], rem: previous.removed });
+      redraw();
+      const xy = posOf(e);
+      if (SIZES[S.tool]) {
+        live = { tool: S.tool, id: e.pointerId, pts: [xy], c: S.col[S.tool], w: SIZES[S.tool][S.sizeIdx] };
+      } else if (S.tool === 'eraser') {
+        live = { tool: 'eraser', id: e.pointerId, removed: [], pts: [] };
+        eraseAt(xy[0], xy[1]);
+      }
+    }
+  }
+  if (!live || live.id !== e.pointerId) return;
+  e.preventDefault();
+  const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+  for (const ev of evs.length ? evs : [e]) {
+    const [x, y] = posOf(ev);
+    if (live.tool === 'eraser') { eraseAt(x, y); continue; }
+    const l = live.pts[live.pts.length - 1];
+    if (live.tool === 'line') { live.pts[1] = [x, y]; continue; }
+    if (Math.hypot(x - l[0], y - l[1]) >= 1.2) live.pts.push([x, y]);
+  }
+  schedule();
+}
+function onUp(e) {
+  penButton(e);
+  ptrs.delete(e.pointerId);
+  if (gesture === 'multitouch-block') { if (!ptrs.size) { gesture = null; lastC = null; } return; }
+  if (tap && tap.id === e.pointerId) {
+    const T0 = tap; tap = null;
+    if (Math.hypot(e.clientX - T0.cx, e.clientY - T0.cy) < 8 && Date.now() - T0.t < 600) pickGlyph(T0.pos);
+  }
+  if (gesture === 'scroll') {
+    if (!ptrs.size) { gesture = null; lastC = null; } else lastC = centroid();
+    return;
+  }
+  if (!live || live.id !== e.pointerId) { if (!ptrs.size) gesture = null; return; }
+  const L = live; live = null; gesture = null;
+  if (L.tool === 'eraser') {
+    if (L.removed.length) commit({ add: [], rem: L.removed });
+    redraw(); return;
+  }
+  finishStroke(L);
+}
+function finishStroke(L) {
+  let item = null;
+  if (L.tool === 'line') {
+    if (L.pts.length < 2) { redraw(); return; }
+    let [x1, y1] = L.pts[0], [x2, y2] = L.pts[L.pts.length - 1];
+    if (Math.hypot(x2 - x1, y2 - y1) < 14) { redraw(); return; }
+    if (Math.abs(y2 - y1) < 0.22 * Math.abs(x2 - x1)) { y1 = y2 = (y1 + y2) / 2; }
+    item = { k: 'l', c: L.c, w: L.w, x1, y1, x2, y2 };
+  } else {
+    const p = [];
+    L.pts.forEach((q) => p.push(Math.round(q[0] * 10) / 10, Math.round(q[1] * 10) / 10));
+    item = { k: 's', c: L.c, w: L.w, p };
+    if (L.tool === 'hl') item.hl = true;
+  }
+  page.items.push(item);
+  commit({ add: [item], rem: [] });
+  const b = bboxOf(item);
+  if (b.y2 > page.h - 160) { page.h += 520; layout(); }
+  if (L.tool === 'pen' && S.convert) { pending.push(item); armTimer(); }
+  redraw();
+}
+function eraseAt(x, y) {
+  const r = 12;
+  const gone = page.items.filter((it) => hit(it, x, y, r));
+  if (!gone.length) return;
+  const g = new Set(gone);
+  page.items = page.items.filter((it) => !g.has(it));
+  pending = pending.filter((s) => !g.has(s));
+  live.removed.push(...gone);
+  schedule();
+}
+
+/* ---------- corrigir um caractere já limpo ---------- */
+let FX = null;
+function pickGlyph(pos) {
+  if (!page) return;
+  for (let i = page.items.length - 1; i >= 0; i--) {
+    const it = page.items[i];
+    if (!it.guide && hit(it, pos[0], pos[1], 8)) { openFix(it); return; }
+  }
+}
+function itemStrokePoints(it) {
+  if (it.k === 's') {
+    const out = [];
+    for (let i = 0; i < it.p.length; i += 2) out.push([it.p[i], it.p[i + 1]]);
+    return out.length ? [out] : [];
+  }
+  if (it.k === 'l') return [[[it.x1, it.y1], [it.x2, it.y2]]];
+  return [];
+}
+function correctionCandidates(it) {
+  const out = [];
+  const related = {
+    '1':['1','l','I'], 'l':['l','1','I'], 'I':['I','1','l'], '|':['|','1','l'],
+    '0':['0','O','o'], 'O':['O','0','o'], 'o':['o','0','O'],
+    '2':['2','Z','z'], 'Z':['Z','2','z'], '5':['5','S','s'], 'S':['S','5','s'],
+    '8':['8','B','3'], 'B':['B','8','3'], '6':['6','G','b'], '9':['9','g','q'],
+    '-':['-','—','_'], '/':['/','1','7'], '7':['7','1','/'], '+':['+','t']
+  };
+  if (it.k === 'g') {
+    for (const ch of [...(Array.isArray(it.alternatives) ? it.alternatives : []), ...(related[it.ch] || [it.ch, '1', 'l', 'I'])]) if (ch && !out.includes(ch)) out.push(ch);
+  } else {
+    const pts = itemStrokePoints(it);
+    if (pts.length) {
+      for (const r of Recog.ranked(pts, characterTemplates(), 5)) if (Array.from(r.ch).length === 1 && !out.includes(r.ch)) out.push(r.ch);
+    }
+    for (const ch of ['1','l','I','7','/','-']) if (!out.includes(ch)) out.push(ch);
+  }
+  return out.slice(0, 11);
+}
+function openFix(it) {
+  FX = it;
+  const candidates = correctionCandidates(it);
+  const isRaw = it.k === 's' || it.k === 'l';
+  const chars = candidates.map(ch => `<button class="btn" data-act="fix-choice" data-choice="${esc(ch)}">${esc(ch)}</button>`).join('');
+  const lineChoices = isRaw ? `<div class="field"><span class="lbl">Forma do traço</span><div class="row"><button class="btn" data-act="fix-choice" data-choice="keep">Manter desenho</button><button class="btn" data-act="fix-choice" data-choice="bar-h">Barra horizontal</button><button class="btn" data-act="fix-choice" data-choice="bar-v">Barra vertical</button><button class="btn" data-act="fix-choice" data-choice="slash">Diagonal /</button></div></div>` : '';
+  layer.innerHTML = `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-label="Formatar traço ou caractere">
+    <div class="modal-head"><h2>Formatar / corrigir</h2><button class="icon-btn" data-act="close" aria-label="Fechar">${icon('close')}</button></div>
+    <p class="hint">Escolha a opção mais parecida com o que você escreveu. O desenho original só é substituído depois da sua escolha.</p>
+    ${lineChoices}
+    <div class="field"><span class="lbl">Caracteres mais prováveis</span><div class="row">${chars || '<span class="hint">Digite o caractere correto abaixo.</span>'}</div></div>
+    <div class="field"><label for="fxch">Ou digite o caractere correto</label><input class="text-in" id="fxch" maxlength="1" autocomplete="off" value="${esc(it.k === 'g' ? it.ch : (candidates[0] || ''))}"></div>
+    <div class="modal-foot"><button class="btn danger" data-act="fix-del">${icon('trash')} Apagar</button><button class="btn primary" data-act="fix-ok">Aplicar correção</button></div></div></div>`;
+  const i = $('#fxch'); if (i) { i.focus(); i.select(); }
+}
+function commitFix(old, replacement) {
+  if (!old || !replacement || !page || !page.items.includes(old)) { FX = null; closeLayer(); return; }
+  page.items = page.items.map((i) => i === old ? replacement : i);
+  commit({ add: [replacement], rem: [old] });
+  C.bk = null; redraw(); FX = null; closeLayer();
+}
+function fixChoice(choice) {
+  if (!FX || !page || !page.items.includes(FX)) { FX = null; closeLayer(); return; }
+  const old = FX;
+  if (choice === 'keep') { FX = null; closeLayer(); return; }
+  const b0 = bboxOf(old);
+  const x1 = b0.x1, x2 = b0.x2, y1 = b0.y1, y2 = b0.y2;
+  const minH = Math.max(24, Number(S.settings.cm) * 0.82);
+  const minW = Math.max(18, Number(S.settings.cm) * 0.45);
+  if (choice === 'bar-h' || choice === 'bar-v' || choice === 'slash') {
+    const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2;
+    if (choice === 'bar-h') {
+      const w = Math.max(36, x2 - x1, Number(S.settings.cm));
+      commitFix(old, { k:'l', c:old.c || 'ink', w:old.w || 2.6, x1:cx-w/2, y1:cy, x2:cx+w/2, y2:cy });
+    } else if (choice === 'bar-v') {
+      const h = Math.max(minH, y2-y1, Number(S.settings.cm));
+      commitFix(old, { k:'l', c:old.c || 'ink', w:old.w || 2.6, x1:cx, y1:cy-h/2, x2:cx, y2:cy+h/2 });
+    } else {
+      const w = Math.max(minW, x2-x1), h = Math.max(minH, y2-y1, w*0.75);
+      commitFix(old, { k:'l', c:old.c || 'ink', w:old.w || 2.6, x1:cx+w/2, y1:cy-h/2, x2:cx-w/2, y2:cy+h/2 });
+    }
+    return;
+  }
+  const ch = String(choice || '').trim().slice(0, 1);
+  if (!ch) return;
+  let h = Math.max(y2-y1, old.k === 'g' ? 6 : minH);
+  let w = Math.max(x2-x1, minW);
+  if (old.k === 'l' && y2-y1 < 8) h = Math.max(minH, w * 0.9);
+  if (old.k === 'l' && x2-x1 < 8) w = Math.max(minW, h * 0.55);
+  const cx = (x1+x2)/2, cy = (y1+y2)/2;
+  const m = inkBox(ch); const ratio = m.w / Math.max(1,m.h);
+  if (old.k !== 'g') w = clamp(h*ratio, minW, Math.max(PW*0.7, minW));
+  const box = { x1:cx-w/2, y1:cy-h/2, x2:cx+w/2, y2:cy+h/2 };
+  const fit = S.settings.lock ? fitLocked(ch, box) : snapGlyphToBaseline(ch, box);
+  const bb = fit || box;
+  commitFix(old, { k:'g', ch, c:old.c || 'ink', x:bb.x1, y:bb.y1, w:bb.x2-bb.x1, h:bb.y2-bb.y1 });
+}
+function fixOk() {
+  const v = (($('#fxch') || {}).value || '').trim();
+  if (v) fixChoice(v);
+}
+function fixDel() {
+  if (FX && page && page.items.includes(FX)) {
+    const old = FX;
+    page.items = page.items.filter((i) => i !== old);
+    commit({ add: [], rem: [old] });
+    redraw();
+  }
+  FX = null; closeLayer();
+}
+
+/* ---------- navegação ---------- */
+const app = $('#app'), layer = $('#layer');
+function closeLayer() { layer.innerHTML = ''; }
+function when(t) {
+  if (!t) return '';
+  const d = new Date(t), n = new Date();
+  const day = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((day(n) - day(d)) / 864e5);
+  if (diff <= 0) return 'hoje';
+  if (diff === 1) return 'ontem';
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+}
+function coverHTML(c, name, sub) {
+  const photo = c && c.kind === 'photo' && c.data;
+  const bg = photo ? '#1B2430' : (c && c.color) || COVERS[0];
+  return `<span class="cover" style="--cv:${esc(bg)}">${photo ? `<img alt="" src="${esc(c.data)}">` : ''}<span class="spiral"></span><span class="label"><b>${esc(name || 'Sem nome')}</b><small>${esc(sub || '')}</small></span></span>`;
+}
+function renderHome() {
+  cancelPending();
+  live = null; page = null; C.cv = null; C.bk = null;
+  if (C.ro) { C.ro.disconnect(); C.ro = null; }
+  S.nb = null;
+  const n = S.nbs.length;
+  const cards = S.nbs.map((nb) => {
+    const typeName = nb.kind === 'calligraphy' ? 'Caligrafia · treino automático' : (TYPES[nb.defType] || 'Pautada');
+    return `<article class="nb"><button class="cv-btn" data-act="open" data-id="${esc(nb.id)}" aria-label="Abrir ${esc(nb.name)}">${coverHTML(nb.cover, nb.name, typeName)}</button>
+      <div class="nb-meta"><div><strong>${esc(nb.name)}</strong><span>${nb.pages.length} ${nb.pages.length === 1 ? 'folha' : 'folhas'} · ${when(nb.updated)}</span></div>
+      <button class="icon-btn" data-act="menu" data-id="${esc(nb.id)}" aria-label="Mais opções de ${esc(nb.name)}">${icon('dots')}</button></div></article>`;
+  }).join('');
+  app.innerHTML = `<div class="home">
+    ${DB.ok ? '' : '<p class="warn">Este navegador não deixou guardar os cadernos neste aparelho. Eles ficam só na nuvem e enquanto a página estiver aberta.</p>'}
+    <header class="home-head"><div><h1>Letra <mark>Limpa</mark></h1><p>${n ? n + (n === 1 ? ' caderno' : ' cadernos') : 'Nenhum caderno ainda'}</p></div>
+    <div class="head-actions"><button class="btn" data-act="backup">Backup</button><button class="btn" data-act="train">${icon('clean')} Treinar minha letra</button><button class="btn primary" data-act="newnb">${icon('plus')} Novo caderno</button><button class="btn ghost" data-act="logout">Sair</button></div></header>
+    <main class="shelf">${cards || `<div class="empty"><h2>Seu primeiro caderno</h2><p>Escolha um nome, uma capa e o tipo de folha. Depois é só escrever.</p><button class="btn primary" data-act="newnb">${icon('plus')} Novo caderno</button></div>`}</main></div>`;
+}
+
+/* ---------- janelas ---------- */
+function popAt(anchor, html) {
+  const r = anchor.getBoundingClientRect();
+  layer.innerHTML = `<div class="pop-bg" data-act="close"></div><div class="pop" id="pop" role="menu">${html}</div>`;
+  const p = $('#pop');
+  const w = p.offsetWidth, h = p.offsetHeight;
+  p.style.left = clamp(r.right - w, 12, window.innerWidth - w - 12) + 'px';
+  let top = r.bottom + 6;
+  if (top + h > window.innerHeight - 12) top = Math.max(12, r.top - h - 6);
+  p.style.top = top + 'px';
+}
+function openMenu(id, anchor) {
+  S.menuId = id;
+  popAt(anchor, `<button data-act="m-rename">${icon('edit')} Renomear</button><button data-act="m-cover">${icon('image')} Trocar capa</button><button class="danger" data-act="m-delete">${icon('trash')} Excluir caderno</button>`);
+}
+let F = null;
+function typeOptions(sel) {
+  return Object.keys(TYPES).map((t) => `<button class="typeopt" data-act="pick-type" data-t="${t}" aria-pressed="${sel === t}"><span class="thumb" style="${bgCss(t, 12)}"></span>${TYPES[t]}${t === 'pontilhada' || t === 'quadriculada' ? '<small>1 cm</small>' : '<small>&nbsp;</small>'}</button>`).join('');
+}
+function coverPick() {
+  const name = F.name.trim() || F.placeholder;
+  const sw = COVERS.map((c) => `<button class="sw" style="--sw:${c}" data-act="pick-color" data-c="${c}" aria-label="Cor ${c}" aria-pressed="${F.cover.kind === 'color' && F.cover.color === c}"></button>`).join('');
+  return `<div class="cover-pick">${coverHTML(F.cover, name, '')}<div class="field"><span class="lbl">Cor da capa</span><div class="swatches">${sw}</div>
+    <div class="row"><button class="btn" data-act="pick-photo">${icon('image')} ${F.cover.kind === 'photo' ? 'Trocar foto' : 'Usar uma foto'}</button>${F.cover.kind === 'photo' ? `<button class="btn ghost" data-act="rm-photo">Tirar foto</button>` : ''}</div></div></div>`;
+}
+function openForm(mode, id) {
+  const nb = id ? S.nbs.find((x) => x.id === id) : null;
+  F = { mode, id, name: nb ? nb.name : '', placeholder: 'Caderno ' + (S.nbs.length + 1), cover: nb ? JSON.parse(JSON.stringify(nb.cover)) : { kind: 'color', color: COVERS[S.nbs.length % COVERS.length] }, type: 'pautada', kind: nb ? (nb.kind || 'standard') : 'standard' };
+  if (!F.name && mode === 'new') F.placeholder = F.kind === 'calligraphy' ? 'Caderno de caligrafia' : 'Caderno ' + (S.nbs.length + 1);
+  const title = mode === 'new' ? 'Novo caderno' : mode === 'rename' ? 'Renomear caderno' : 'Trocar capa';
+  const nameField = mode !== 'cover' ? `<div class="field"><label for="nbname">Nome do caderno</label><input class="text-in" id="nbname" maxlength="60" autocomplete="off" placeholder="${esc(F.placeholder)}" value="${esc(F.name)}"></div>` : '';
+  const coverField = mode !== 'rename' ? `<div class="field"><span class="lbl">Capa</span><div id="nbcover">${coverPick()}</div></div>` : '';
+  const kindField = mode === 'new' ? `<div class="field"><span class="lbl">Modelo do caderno</span><div class="typegrid" id="nbkinds"><button class="typeopt" data-act="pick-kind" data-kind="standard" aria-pressed="${F.kind === 'standard'}"><span class="thumb" style="${bgCss('pautada', 12)}"></span>Caderno comum<small>Folhas livres</small></button><button class="typeopt" data-act="pick-kind" data-kind="calligraphy" aria-pressed="${F.kind === 'calligraphy'}"><span class="thumb" style="${bgCss('pautada', 12)};display:grid;place-items:center;font-size:24px;color:var(--dot);font-family:cursive;font-style:italic">Aa 123</span>Caderno de caligrafia<small>Treino automático sem fim</small></button></div><p class="hint">O caderno de caligrafia gera uma nova lição sempre que você avançar além da última folha: bastão e cursiva, letras maiúsculas/minúsculas e números.</p></div>` : '';
+  const typeField = mode === 'new' ? `<div class="field"><span class="lbl">Tipo de folha</span><div class="typegrid" id="nbtypes">${typeOptions(F.type)}</div><p class="hint">Escolha o fundo das folhas de treino ou do caderno comum.</p></div>` : '';
+  layer.innerHTML = `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-label="${title}">
+    <div class="modal-head"><h2>${title}</h2><button class="icon-btn" data-act="close" aria-label="Fechar">${icon('close')}</button></div>
+    ${nameField}${coverField}${kindField}${typeField}
+    <input type="file" id="coverfile" accept="image/*" hidden>
+    <div class="modal-foot"><button class="btn ghost" data-act="close">Cancelar</button><button class="btn primary" data-act="form-ok">${mode === 'new' ? 'Criar caderno' : 'Salvar'}</button></div></div></div>`;
+  const inp = $('#nbname');
+  if (inp) {
+    inp.addEventListener('input', () => { F.name = inp.value; const c = $('#nbcover'); if (c && mode === 'new') c.innerHTML = coverPick(); });
+    inp.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') submitForm(); });
+    if (mode === 'rename') { inp.focus(); inp.select(); }
+  }
+  $('#coverfile').addEventListener('change', async (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f || !F) return;
+    try { F.cover = { kind: 'photo', data: await fileToCover(f) }; $('#nbcover').innerHTML = coverPick(); } catch (_) {}
+  });
+}
+function fileToCover(file) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file);
+    const im = new Image();
+    im.onload = () => {
+      const W = 420, Hh = 560, c = document.createElement('canvas');
+      c.width = W; c.height = Hh;
+      const x = c.getContext('2d');
+      const sc = Math.max(W / im.width, Hh / im.height), w = im.width * sc, h = im.height * sc;
+      x.drawImage(im, (W - w) / 2, (Hh - h) / 2, w, h);
+      URL.revokeObjectURL(url);
+      res(c.toDataURL('image/jpeg', 0.8));
+    };
+    im.onerror = () => { URL.revokeObjectURL(url); rej(new Error('imagem')); };
+    im.src = url;
+  });
+}
+function submitForm() {
+  if (!F) return;
+  if (F.mode === 'new') {
+    const kind = F.kind || 'standard';
+    const pg = kind === 'calligraphy' ? makeCalligraphyPage(0) : newPage(F.type);
+    const nb = { id: uid(), name: F.name.trim() || F.placeholder, cover: F.cover, pages: [pg.id], defType: F.type, kind, practiceIndex: kind === 'calligraphy' ? 0 : undefined, created: Date.now(), updated: Date.now() };
+    S.nbs.unshift(nb);
+    pages.set(pg.id, pg); dirtyPages.add(pg.id);
+    if (nb.cover.kind === 'photo') coverDirty.add(nb.id);
+    markMeta(); closeLayer(); F = null; openNb(nb.id, 0);
+  } else {
+    const nb = S.nbs.find((x) => x.id === F.id);
+    if (nb) {
+      if (F.mode === 'rename') nb.name = F.name.trim() || nb.name;
+      else { nb.cover = F.cover; coverDirty.add(nb.id); }
+      markMeta();
+    }
+    closeLayer(); F = null; renderHome();
+  }
+}
+function confirmDelete(id) {
+  const nb = S.nbs.find((x) => x.id === id);
+  if (!nb) return;
+  S.menuId = id;
+  layer.innerHTML = `<div class="modal-bg"><div class="modal" role="alertdialog" aria-modal="true"><div class="modal-head"><h2>Excluir “${esc(nb.name)}”?</h2></div>
+    <p class="hint">Todas as ${nb.pages.length} ${nb.pages.length === 1 ? 'folha' : 'folhas'} deste caderno serão apagadas e isso não pode ser desfeito.</p>
+    <div class="modal-foot"><button class="btn ghost" data-act="close">Cancelar</button><button class="btn danger" data-act="do-delete">${icon('trash')} Excluir</button></div></div></div>`;
+}
+async function doDelete() {
+  const i = S.nbs.findIndex((x) => x.id === S.menuId);
+  if (i < 0) return;
+  const nb = S.nbs[i];
+  S.nbs.splice(i, 1);
+  markMeta(); closeLayer(); renderHome();
+  for (const id of nb.pages) { pages.delete(id); hist.delete(id); dirtyPages.delete(id); await DB.del('page:' + id); }
+  coverDirty.delete(nb.id);
+  await DB.del('cover:' + nb.id);
+}
+
+/* ---------- páginas e editor ---------- */
+function newPage(type) { return { id: uid(), type, h: PH0, items: [], zones: [], exercises: [] }; }
+/* garante que uma folha vinda do disco, da nuvem ou de um backup tem o formato certo */
+function cleanPage(p, id, def) {
+  if (!p || typeof p !== 'object') p = {};
+  p.id = id;
+  if (!TYPES[p.type]) p.type = def;
+  if (!Array.isArray(p.items)) p.items = [];
+  if (!Array.isArray(p.zones)) p.zones = [];
+  p.zones = p.zones.filter((z) => z && TYPES[z.type]).map((z) => ({ type: z.type, weight: clamp(+z.weight || 1, 1, 100) }));
+  if (!Array.isArray(p.exercises)) p.exercises = [];
+  p.h = clamp(+p.h || PH0, PH0, PH0 * 40);
+  return p;
+}
+async function getPage(id) {
+  if (pages.has(id)) return pages.get(id);
+  const p = cleanPage(await DB.get('page:' + id), id, 'pautada');
+  pages.set(id, p);
+  return p;
+}
+function setZoom(next) {
+  const st = $('#stage'), sh = $('#sheet'), cv = C.cv;
+  if (!st || !sh || !cv) return;
+  const oldW = parseFloat(cv.style.width) || PW * C.s || PW;
+  const oldH = parseFloat(cv.style.height) || (page ? page.h * C.s : PH0);
+  const left = sh.offsetLeft || 0;
+  const fx = clamp((st.scrollLeft + st.clientWidth / 2 - left) / oldW, 0, 1);
+  const fy = clamp((st.scrollTop + st.clientHeight / 2) / oldH, 0, 1);
+  viewZoom = clamp(Math.round(next * 100) / 100, 0.5, 2.5);
+  layout();
+  const nw = parseFloat(cv.style.width) || PW * C.s;
+  const nh = parseFloat(cv.style.height) || (page ? page.h * C.s : PH0);
+  const newLeft = sh.offsetLeft || 0;
+  st.scrollLeft = Math.max(0, newLeft + fx * nw - st.clientWidth / 2);
+  st.scrollTop = Math.max(0, fy * nh - st.clientHeight / 2);
+  const label = $('#zoom-label');
+  if (label) label.textContent = Math.round(viewZoom * 100) + '%';
+}
+async function openNb(id, idx) {
+  const nb = S.nbs.find((x) => x.id === id);
+  if (!nb) return;
+  S.nb = nb;
+  await gotoPage(clamp(idx || 0, 0, nb.pages.length - 1), true);
+}
+async function gotoPage(i, rebuild) {
+  convertPending();
+  const p = await getPage(S.nb.pages[i]);
+  S.pi = i;
+  page = p;
+  lastAutoWord = null;
+  if (rebuild || !$('#stage')) renderEditor(); else { updateHeader(); updateNav(); C.bk = null; layout(); redraw(); $('#stage').scrollTop = 0; }
+}
+
+function renderEditor() {
+  app.innerHTML = `
+  <div class="ed">
+    <header class="ed-top-bar">
+      <div style="display: flex; gap: 12px; align-items: center; min-width: 0;">
+        <button class="btn ghost" data-act="home" aria-label="Voltar para os cadernos">${icon('back')}</button>
+        <div class="ed-title"><strong id="nbtitle"></strong><span id="nbsub"></span></div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+        <div id="ednav" style="display: flex; gap: 2px; flex-wrap:wrap;"></div>
+        <div class="ed-extra-actions"><button class="btn ghost" data-act="exercise-menu">${icon('scanText')} Exercício</button><button class="btn ghost" data-act="export-menu">${icon('download')} Exportar</button></div>
+        <div class="ed-status"><div class="status-indicator" id="save-indicator"></div><span id="saved">Salvo</span></div>
+        <button class="btn ghost" data-act="logout">Sair</button>
+      </div>
+    </header>
+    <input type="file" id="exercise-file" accept="image/*,application/pdf,.pdf" hidden>
+    <input type="file" id="exercise-camera" accept="image/*" capture="environment" hidden>
+    <div class="ed-container">
+      <aside class="ed-sidebar">
+        <div class="ed-sidebar-head">Folhas
+          <button class="icon-btn" data-act="addpage" style="width:36px; height:36px;" aria-label="Nova folha">${icon('plus')}</button>
+        </div>
+        <div class="ed-sidebar-content" id="pglist"></div>
+      </aside>
+      <main class="ed-main">
+        <div class="stage" id="stage"><div class="sheet" id="sheet"><div class="page-zones" id="page-zones"></div><canvas id="cv"></canvas></div></div>
+        <footer class="tools" id="tools"></footer>
+      </main>
+    </div>
+  </div>`;
+
+  C.cv = $('#cv');
+  C.ctx = C.cv.getContext('2d');
+  C.bk = null; C.s = 0;
+  C.cv.addEventListener('pointerdown', onDown);
+  C.cv.addEventListener('pointermove', onMove);
+  C.cv.addEventListener('pointerup', onUp);
+  C.cv.addEventListener('pointercancel', onUp);
+  C.cv.addEventListener('pointerleave', (e) => { if (e.pointerType === 'pen') lastBtn = false; });
+  C.cv.addEventListener('contextmenu', (e) => e.preventDefault());
+  $('#exercise-file').addEventListener('change', async (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) await handleExerciseFile(f); });
+  $('#exercise-camera').addEventListener('change', async (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) await handleExerciseFile(f); });
+
+  if (C.ro) C.ro.disconnect();
+  C.ro = new ResizeObserver(() => layout());
+  C.ro.observe($('#stage'));
+  $('#stage').addEventListener('wheel', (e) => {
+    if (e.ctrlKey || e.metaKey) { e.preventDefault(); setZoom(viewZoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1)); }
+  }, { passive: false });
+
+  updateHeader();
+  updateNav();
+  renderTools();
+  layout();
+}
+
+function renderSidebar() {
+  const el = $('#pglist');
+  if (!el) return;
+  el.innerHTML = S.nb.pages.map((id, i) => {
+    const p = pages.get(id);
+    return `<button class="sidebar-item${i === S.pi ? ' active' : ''}" data-act="goto" data-i="${i}" aria-current="${i === S.pi}">${S.nb && S.nb.kind === 'calligraphy' ? 'Lição ' + ((p && p.practice && p.practice.index != null) ? (p.practice.index + 1) : (i + 1)) : 'Folha ' + (i + 1)}<small>${p ? (p.practice ? esc(p.practice.label || pageTypeLabel(p)) : pageTypeLabel(p)) : ''}</small></button>`;
+  }).join('');
+}
+function updateHeader() {
+  $('#nbtitle').textContent = S.nb.name;
+  $('#nbsub').textContent = S.nb.kind === 'calligraphy' ? `Lição ${page.practice ? page.practice.index + 1 : S.pi + 1} · ${page.practice ? page.practice.label : 'Treino de caligrafia'} · ${S.nb.pages.length} lições geradas` : `Folha ${S.pi + 1} de ${S.nb.pages.length} · ${pageTypeLabel(page)}`;
+  setSave(saveState);
+  renderSidebar();
+}
+
+function updateNav() {
+  if (!$('#ednav')) return;
+  const h = page ? H() : { u: [], r: [] };
+  const n = S.nb.pages.length;
+  $('#ednav').innerHTML = `<button class="icon-btn" data-act="undo" aria-label="Desfazer" ${h.u.length ? '' : 'disabled'}>${icon('undo')}</button>
+    <button class="icon-btn" data-act="redo" aria-label="Refazer" ${h.r.length ? '' : 'disabled'}>${icon('redo')}</button>
+    <button class="icon-btn" data-act="prev" aria-label="Folha anterior" ${S.pi > 0 ? '' : 'disabled'}>${icon('back')}</button>
+    <button class="icon-btn" data-act="next" aria-label="Próxima folha" ${S.pi < n - 1 || S.nb.kind === 'calligraphy' ? '' : 'disabled'}>${icon('next')}</button>
+    <button class="icon-btn" data-act="addpage" aria-label="Nova folha">${icon('plus')}</button>
+    <button class="icon-btn" data-act="settings" aria-label="Ajustes">${icon('sliders')}</button>
+    <span class="zoom-controls" aria-label="Zoom da folha"><button data-act="zoom-out" aria-label="Diminuir zoom" title="Diminuir zoom">−</button><output id="zoom-label">${Math.round(viewZoom * 100)}%</output><button data-act="zoom-in" aria-label="Aumentar zoom" title="Aumentar zoom">+</button><button data-act="zoom-reset" aria-label="Ajustar folha" title="Ajustar à tela">Ajustar</button></span>`;
+}
+
+function renderTools() {
+  if (!$('#tools')) return;
+  const t = S.tool;
+  const defs = [
+    ['pen', 'pen', 'Caneta'],
+    ['hl', 'hl', 'Marca-texto'],
+    ['line', 'underline', 'Linha reta'],
+    ['eraser', 'eraser', 'Borracha'],
+    ['select', 'edit', 'Corrigir'],
+    ['hand', 'hand', 'Rolar'],
+  ];
+  const tb = defs.map(([k, ic, nm]) => `<button class="tool" data-act="tool" data-t="${k}" aria-pressed="${t === k}" aria-label="${nm}">${icon(ic)}${nm}</button>`).join('');
+  let extra = '';
+  if (SIZES[t]) {
+    const cur = S.col[t];
+    extra += `<span class="sep"></span><div class="tgroup">${COLORS.map((c) => `<button class="cdot" style="--cc:var(${c === 'ink' ? '--ink' : '--c-' + c})" data-act="color" data-c="${c}" aria-pressed="${cur === c}" aria-label="${CNAME[c]}"></button>`).join('')}</div>`;
+    const sz = SIZES[t].map((v, i) => { const d = t === 'hl' ? 8 + i * 5 : 4 + i * 3; return `<button class="dot" data-act="size" data-i="${i}" aria-pressed="${S.sizeIdx === i}" aria-label="Espessura ${i + 1}"><i style="width:${d}px;height:${d}px"></i></button>`; }).join('');
+    extra += `<span class="sep"></span><div class="tgroup">${sz}</div>`;
+  }
+  if (t === 'pen') extra += `<span class="sep"></span><button class="tool letter" data-act="toggle-convert" aria-pressed="${S.convert}" aria-label="Letra limpa">${icon('clean')}Letra limpa</button>`;
+  if (t === 'pen' && S.convert) {
+    const L = S.settings.lines, lk = S.settings.lock;
+    extra += `<span class="sep"></span><div class="tgroup" role="group" aria-label="Tamanho da letra em linhas"><button class="icon-btn" data-act="lines-minus" aria-label="Diminuir meia linha">−</button><output class="lines" aria-live="polite">${String(L).replace('.', ',')} ${L <= 1 ? 'linha' : 'linhas'}</output><button class="icon-btn" data-act="lines-plus" aria-label="Aumentar meia linha">+</button><button class="tool lock" data-act="lock" aria-pressed="${lk}" aria-label="${lk ? 'Destravar tamanho' : 'Travar tamanho'}">${icon(lk ? 'lock' : 'unlock')}${lk ? 'Travado' : 'Auto'}</button></div>`;
+  }
+  if (t === 'select') extra += `<span class="sep"></span><span class="hint">Toque em um traço ou caractere para escolher alternativas, corrigir ou apagar</span>`;
+  $('#tools').innerHTML = `<div class="tgroup">${tb}</div>${extra}`;
+  const st = $('#stage');
+  if (st) { st.classList.toggle('hand', t === 'hand'); st.classList.toggle('sel', t === 'select'); }
+}
+
+/* ---------- ajustes ---------- */
+function zoneEditorHTML() {
+  const zones = page.zones && page.zones.length > 1 ? page.zones : [{ type: page.type, weight: 1 }];
+  const total = zones.reduce((a,z) => a + clamp(+z.weight || 1, 1, 100), 0) || zones.length;
+  return `<div class="field" id="zone-editor">${zones.map((z,i) => `<div class="zone-row"><select class="text-in" data-zone-type="${i}" aria-label="Tipo da parte ${i+1}">${Object.keys(TYPES).map((t)=>`<option value="${t}" ${t===z.type?'selected':''}>${TYPES[t]}</option>`).join('')}</select><div><input class="text-in" data-zone-weight="${i}" type="number" min="1" max="100" value="${clamp(+z.weight || 1,1,100)}" aria-label="Proporção da parte ${i+1}" ${zones.length<2?'disabled':''}><div class="zone-pct">${Math.round((clamp(+z.weight||1,1,100)/total)*100)}% da folha</div></div><button class="icon-btn" data-act="zone-remove" data-i="${i}" aria-label="Remover parte ${i+1}" ${zones.length<2?'disabled':''}>${icon('close')}</button></div>`).join('')}</div>`;
+}
+function settingsHTML() {
+  const g = S.settings.cm;
+  const sw = (id, label, on) => `<button class="switch" id="${id}" role="switch" aria-checked="${on}" data-act="${id}"><span>${label}</span><i></i></button>`;
+  return `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-label="Ajustes">
+    <div class="modal-head"><h2>Ajustes</h2><button class="icon-btn" data-act="close" aria-label="Fechar">${icon('close')}</button></div>
+    <section class="sect"><h3>Esta folha</h3><div class="typegrid" id="pgtypes">${Object.keys(TYPES).map((t) => `<button class="typeopt" data-act="set-type" data-t="${t}" aria-pressed="${page.type === t && !(page.zones && page.zones.length > 1)}"><span class="thumb" style="${bgCss(t, 12)}"></span>${TYPES[t]}<small>&nbsp;</small></button>`).join('')}</div>
+      <button class="btn danger" data-act="del-page" id="delpage" ${S.nb.pages.length > 1 ? '' : 'disabled'}>${icon('trash')} Apagar esta folha</button></section>
+    <section class="sect"><h3>Dividir a folha em partes</h3><p class="hint">Misture folhas lisas, pautadas, pontilhadas ou quadriculadas na mesma página. Os números são proporções: 50 + 50 divide ao meio; 70 + 30 deixa a primeira parte maior.</p>${zoneEditorHTML()}<div class="row"><button class="btn" data-act="zone-add">${icon('plus')} Adicionar parte</button><button class="btn ghost" data-act="zone-clear">Uma folha inteira</button></div></section>
+    <section class="sect"><h3>Tamanho do quadradinho</h3><p class="hint">Encoste uma régua na tela e ajuste até o quadrado medir 1 cm.</p>
+      <div class="stepper"><button class="icon-btn btn" data-act="cm-minus" aria-label="Diminuir">−</button><output id="cmout">${g} px</output><button class="icon-btn btn" data-act="cm-plus" aria-label="Aumentar">+</button><span class="cmbox" id="cmbox" style="width:${g}px;height:${g}px"></span></div></section>
+    <section class="sect"><h3>Letra limpa</h3><div class="field"><label for="delay">Pausa antes de reconhecer a palavra: <b id="delayout">${(S.settings.delay / 1000).toFixed(1).replace('.', ',')} s</b></label><input type="range" id="delay" min="500" max="2500" step="100" value="${S.settings.delay}"></div><p class="hint">O aplicativo aguarda essa pausa depois do último traço. Para escrever uma palavra inteira antes de converter, experimente 1,2 a 1,8 segundo. Palavras cursivas precisam ser treinadas no botão abaixo.</p>
+      ${sw('recognizeStraight', 'Reconhecer traços retos como caracteres', !!S.settings.recognizeStraight)}<p class="hint">Desligado por padrão para uma barra continuar sendo uma barra. Ative se quiser reconhecer caracteres feitos com um único traço, como 1 ou /.</p>
+      ${sw('snapBaseline', 'Alinhar letras reconhecidas à linha', S.settings.snapBaseline !== false)}<p class="hint">Em folhas pautadas ou quadriculadas, aproxima a base da letra da linha horizontal mais próxima.</p>
+      <button class="btn" data-act="train">${icon('clean')} Treinar minha letra</button></section>
+    <section class="sect"><h3>Escrita</h3>${sw('finger', 'Escrever com o dedo', S.settings.finger)}<p class="hint">Gestos com dois toques (incluindo pinça) são ignorados para evitar rabiscos ou movimentos acidentais. Use os botões + e − para controlar o zoom. Com a S Pen, o dedo pode rolar a folha conforme este ajuste.</p></section>
+    <section class="sect"><h3>Botão da caneta (S Pen)</h3><div class="typegrid" id="penbtns">${[['hold', 'Segurar botão = borracha automática'], ['swap', 'Apertar alterna borracha e caneta'], ['lock', 'Apertar liga ou desliga a trava'], ['off', 'Desligado']].map(([k, n]) => `<button class="typeopt" data-act="penbtn" data-m="${k}" aria-pressed="${S.settings.penBtn === k}">${n}</button>`).join('')}</div>
+      <p class="hint" id="pentest">Teste: aproxime a S Pen da folha e aperte o botão lateral. Se o navegador não informar o botão, use a ferramenta Borracha da barra.</p></section>
+    </div></div>`;
+}
+
+/* ---------- treino da letra ---------- */
+const GROUPS = [
+  ['Números', '0123456789'.split('')],
+  ['Letras minúsculas', 'abcdefghijklmnopqrstuvwxyz'.split('')],
+  ['Letras maiúsculas', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')],
+  ['Acentuadas minúsculas', ['á', 'à', 'â', 'ã', 'é', 'ê', 'í', 'ó', 'ô', 'õ', 'ú', 'ü', 'ç']],
+  ['Acentuadas maiúsculas', ['Á', 'À', 'Â', 'Ã', 'É', 'Ê', 'Í', 'Ó', 'Ô', 'Õ', 'Ú', 'Ü', 'Ç']],
+  ['Pontuação', ['.', ',', ':', ';', '?', '!', '…', '¿', '¡', "'", '"']],
+  ['Matemática', ['+', '-', '=', '/', '×', '÷', '<', '>', '≤', '≥', '≠', '%', '‰', '√']],
+  ['Símbolos comuns', ['(', ')', '[', ']', '{', '}', '@', '#', '$', '&', '*', '_', '^', '~', '|', '\\']],
+];
+const FLAT = GROUPS.flatMap((g) => g[1]);
+const TR = { ch: 'a', strokes: [], cur: null, paint: () => {}, isWord: false };
+function chipsHTML() {
+  return GROUPS.map(([nm, list]) => `<div><h4>${nm}</h4><div class="chips">${list.map((c) => { const n = (S.train[c] || []).length; return `<button class="chip" data-act="tr-pick" data-ch="${esc(c)}" aria-pressed="${TR.ch === c}">${esc(c)}${n ? `<em>${n}</em>` : ''}</button>`; }).join('')}</div></div>`).join('');
+}
+function openTrain() {
+  TR.showGuide = TR.showGuide !== false;
+  TR.feedback = 'Salve 3 a 5 amostras da mesma letra, variando um pouco o jeito de escrever, para melhorar o reconhecimento.';
+  layer.innerHTML = `<div class="modal-bg"><div class="modal wide" role="dialog" aria-modal="true" aria-label="Treinar minha letra">
+    <div class="modal-head"><h2>Treinar minha letra</h2><button class="icon-btn" data-act="close" aria-label="Fechar">${icon('close')}</button></div>
+    <p class="hint">Para letras isoladas, selecione um caractere. Para cursiva, digite a palavra abaixo, escreva a palavra inteira no quadro e salve várias amostras com sua própria caligrafia. Palavras novas são reconhecidas com base nas amostras que você cadastrar.</p>
+    <div class="row" style="align-items:stretch"><input class="text-in" style="flex:1;min-width:160px" id="tr-word" maxlength="40" placeholder="Ex.: bom dia, obrigado, matemática"><button class="btn" data-act="tr-use-word">Treinar palavra cursiva</button></div>
+    <div class="train"><div class="pad-wrap"><div class="pad-label"><b id="trch"></b><span id="trcount"></span></div><canvas id="pad"></canvas>
+      <div class="row"><button class="btn" data-act="tr-clear">Limpar</button><button class="btn" data-act="tr-undo">Desfazer traço</button><button class="btn primary" data-act="tr-save">Salvar amostra</button></div>
+      <div class="tr-actions"><button class="btn" data-act="tr-prev">← Anterior</button><button class="btn" data-act="tr-next">Próximo →</button><button class="btn" data-act="tr-guide" aria-pressed="${TR.showGuide}">Modelo: ${TR.showGuide ? 'ligado' : 'desligado'}</button><button class="btn" data-act="tr-test">Testar letra</button></div>
+      <div class="tr-feedback" id="tr-feedback" aria-live="polite"></div>
+      <button class="btn ghost" data-act="tr-reset">Apagar amostras deste caractere</button></div>
+      <div class="chipgroups" id="chips">${chipsHTML()}</div></div></div></div>`;
+  TR.strokes = [];
+  setupPad();
+  trInfo();
+}
+function trInfo() {
+  const ch = $('#trch');
+  if (ch) ch.textContent = TR.ch;
+  const wordInput = $('#tr-word');
+  if (wordInput && TR.isWord && wordInput.value !== TR.ch) wordInput.value = TR.ch;
+  const n = (S.train[TR.ch] || []).length;
+  const count = $('#trcount');
+  if (count) count.textContent = n ? `${n} ${n === 1 ? 'amostra salva' : 'amostras salvas'} · ideal: 3–5` : 'sem amostras ainda';
+  const chips = $('#chips');
+  if (chips) chips.innerHTML = chipsHTML();
+  const feedback = $('#tr-feedback');
+  if (feedback) feedback.textContent = TR.feedback || '';
+  const guide = $('[data-act="tr-guide"]');
+  if (guide) { guide.setAttribute('aria-pressed', String(TR.showGuide)); guide.textContent = `Modelo: ${TR.showGuide ? 'ligado' : 'desligado'}`; }
+}
+function setupPad() {
+  const pad = $('#pad');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  const r = pad.getBoundingClientRect();
+  pad.width = Math.round(r.width * dpr); pad.height = Math.round(r.height * dpr);
+  const x = pad.getContext('2d');
+  TR.cur = null;
+  TR.paint = () => {
+    x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, pad.width, pad.height);
+    x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (TR.showGuide) {
+      const cs = getComputedStyle(document.documentElement);
+      x.save(); x.globalAlpha = 0.13; x.fillStyle = cs.getPropertyValue('--muted').trim() || '#7B8794';
+      const guideSize = Math.min(116, r.height * 0.62, (r.width - 24) / Math.max(1.8, Array.from(TR.ch).length * 0.62));
+      x.font = `500 ${guideSize}px Figtree, system-ui, sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.fillText(TR.ch, r.width / 2, r.height / 2, r.width - 20); x.restore();
+      x.save(); x.globalAlpha = 0.25; x.strokeStyle = cs.getPropertyValue('--rule').trim() || '#B7D0E6'; x.lineWidth = 1;
+      x.beginPath(); x.moveTo(8, r.height * 0.72); x.lineTo(r.width - 8, r.height * 0.72); x.stroke(); x.restore();
+    }
+    x.strokeStyle = palette().ink; x.lineWidth = 3; x.lineCap = 'round'; x.lineJoin = 'round';
+    for (const s of TR.strokes) { const p = []; s.forEach((q) => p.push(q[0], q[1])); strokePath(x, p); }
+  };
+  const pos = (e) => { const b = pad.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top]; };
+  pad.addEventListener('pointerdown', (e) => { e.preventDefault(); try { pad.setPointerCapture(e.pointerId); } catch (_) {} TR.cur = [pos(e)]; TR.strokes.push(TR.cur); TR.paint(); });
+  pad.addEventListener('pointermove', (e) => { if (!TR.cur) return; e.preventDefault(); const q = pos(e), l = TR.cur[TR.cur.length - 1]; if (Math.hypot(q[0] - l[0], q[1] - l[1]) > 1.5) { TR.cur.push(q); TR.paint(); } });
+  const end = () => { TR.cur = null; };
+  pad.addEventListener('pointerup', end); pad.addEventListener('pointercancel', end);
+}
+function trSave() {
+  const strokes = TR.strokes.filter((s) => s.length > 0);
+  if (!strokes.length) { TR.feedback = 'Desenhe o caractere antes de salvar a amostra.'; trInfo(); return; }
+  const norm = Recog.normStrokes(strokes);
+  const list = S.train[TR.ch] || (S.train[TR.ch] = []);
+  list.push(norm);
+  if (list.length > 10) list.shift();
+  tpls = Recog.templates(S.train);
+  markMeta();
+  TR.strokes = []; TR.cur = null;
+  TR.feedback = `Amostra salva para “${TR.ch}”. Você já tem ${list.length}; tente salvar mais ${Math.max(0, 3 - list.length)} para fortalecer o reconhecimento.`;
+  TR.paint(); trInfo();
+}
+function trMove(delta) {
+  TR.isWord = false;
+  const idx = FLAT.indexOf(TR.ch);
+  TR.ch = FLAT[(idx + delta + FLAT.length) % FLAT.length];
+  TR.strokes = []; TR.cur = null;
+  TR.feedback = `Treinando “${TR.ch}”. Escreva no quadro e salve quando estiver pronto.`;
+  TR.paint(); trInfo();
+}
+function trTest() {
+  const strokes = TR.strokes.filter((s) => s.length > 0);
+  if (!strokes.length) { TR.feedback = 'Desenhe primeiro um exemplo para testar.'; trInfo(); return; }
+  const r = Recog.match(strokes, TR.isWord ? wordTemplates() : characterTemplates());
+  if (!r) TR.feedback = 'Não consegui comparar o traço. Tente desenhar maior e com mais cuidado.';
+  else if (r.ambiguous) TR.feedback = `O desenho ficou parecido com “${r.ch}” e “${r.alternative}”. Salve mais exemplos para diferenciar essas letras.`;
+  else if (r.dist > THR) TR.feedback = `O melhor palpite foi “${r.ch}”, mas a confiança ficou baixa. Salve mais exemplos de “${TR.ch}” e tente novamente.`;
+  else TR.feedback = `O melhor palpite é “${r.ch}” (alvo: “${TR.ch}”). ${r.ch === TR.ch ? 'Boa! O modelo reconheceu a letra escolhida.' : 'Se não bateu, salve mais exemplos desta letra e de letras parecidas.'}`;
+  trInfo();
+}
+
+/* ---------- Importar exercício por foto, imagem ou PDF ---------- */
+let OCR_JOB = null;
+function loadExternalScript(src, ready) {
+  if (ready()) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const old = document.querySelector(`script[data-external-src="${src}"]`);
+    if (old && old.dataset.failed === '1') old.remove();
+    else if (old) { old.addEventListener('load', resolve, { once:true }); old.addEventListener('error', () => reject(new Error('Não foi possível carregar a biblioteca externa.')), { once:true }); return; }
+    const el = document.createElement('script'); el.src = src; el.async = true; el.dataset.externalSrc = src;
+    el.onload = () => { el.dataset.loaded = '1'; ready() ? resolve() : reject(new Error('A biblioteca foi carregada, mas não ficou disponível.')); };
+    el.onerror = () => { el.dataset.failed = '1'; reject(new Error('Não consegui baixar o componente de leitura. Verifique a internet.')); };
+    document.head.appendChild(el);
+  });
+}
+async function getImageCanvas(file) {
+  let bitmap;
+  if (window.createImageBitmap) bitmap = await createImageBitmap(file);
+  else {
+    const url = URL.createObjectURL(file);
+    try { bitmap = await new Promise((resolve,reject) => { const im = new Image(); im.onload=()=>resolve(im); im.onerror=reject; im.src=url; }); }
+    finally { setTimeout(()=>URL.revokeObjectURL(url), 1000); }
+  }
+  const maxSide = 1800, factor = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas'); canvas.width = Math.max(1, Math.round(bitmap.width * factor)); canvas.height = Math.max(1, Math.round(bitmap.height * factor));
+  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  if (bitmap.close) bitmap.close();
+  return canvas;
+}
+async function fileToExerciseCanvases(file, status) {
+  if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
+    await loadExternalScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js', () => !!window.pdfjsLib);
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+    const out = [], maxPages = Math.min(pdf.numPages, 8);
+    if (pdf.numPages > maxPages) status.textContent = `O PDF tem ${pdf.numPages} páginas. Vou ler as primeiras ${maxPages} para manter a importação rápida.`;
+    for (let i=1; i<=maxPages; i++) {
+      status.textContent = `Preparando página ${i} de ${maxPages} do PDF…`;
+      const pg = await pdf.getPage(i), vp0 = pg.getViewport({ scale:1 });
+      const scale = Math.min(2, 1800 / Math.max(vp0.width, vp0.height));
+      const vp = pg.getViewport({ scale });
+      const canvas = document.createElement('canvas'); canvas.width=Math.ceil(vp.width); canvas.height=Math.ceil(vp.height);
+      await pg.render({ canvasContext:canvas.getContext('2d'), viewport:vp }).promise;
+      out.push(canvas);
+    }
+    return out;
+  }
+  if (!file.type.startsWith('image/')) throw new Error('Escolha uma imagem (JPG, PNG etc.) ou um arquivo PDF.');
+  return [await getImageCanvas(file)];
+}
+function showOcrProgress(file) {
+  layer.innerHTML = `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-label="Ler exercício"><div class="modal-head"><h2>Lendo exercício</h2><button class="icon-btn" data-act="close" aria-label="Cancelar">${icon('close')}</button></div><p class="hint" id="ocr-status">Preparando ${esc(file.name)}…</p><p class="hint">A leitura de imagem usa OCR e pode precisar de internet na primeira utilização.</p></div></div>`;
+}
+function showExerciseReview(title, text, note='') {
+  layer.innerHTML = `<div class="modal-bg"><div class="modal wide" role="dialog" aria-modal="true" aria-label="Revisar exercício importado"><div class="modal-head"><h2>Revisar exercício</h2><button class="icon-btn" data-act="close" aria-label="Fechar">${icon('close')}</button></div><p class="hint">Revise o texto reconhecido pela foto/PDF antes de inserir. O título e as linhas serão organizados na folha; erros de leitura podem ser corrigidos aqui.</p>${note ? `<p class="warn">${esc(note)}</p>` : ''}<div class="field"><label for="exercise-title">Título do exercício</label><input id="exercise-title" class="text-in" maxlength="100" value="${esc(title)}"></div><div class="field"><label for="exercise-text">Texto reconhecido</label><textarea id="exercise-text" class="text-in" rows="10" style="padding:12px;resize:vertical;line-height:1.5" placeholder="Digite aqui o enunciado se o OCR não conseguiu ler a imagem.">${esc(text)}</textarea></div><p class="hint">O texto será convertido para caracteres alinhados às linhas da folha. A foto original não é armazenada no caderno.</p><div class="modal-foot"><button class="btn ghost" data-act="close">Cancelar</button><button class="btn primary" data-act="exercise-insert">Inserir na folha</button></div></div></div>`;
+}
+async function handleExerciseFile(file) {
+  if (!file) return;
+  showOcrProgress(file);
+  let text = '', note = '';
+  try {
+    const status = $('#ocr-status');
+    const canvases = await fileToExerciseCanvases(file, status);
+    status.textContent = 'Carregando reconhecimento de texto (OCR)…';
+    await loadExternalScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js', () => !!window.Tesseract);
+    const worker = await Tesseract.createWorker('por+eng', 1, { logger: (m) => { const st = $('#ocr-status'); if (st && m.status) st.textContent = `Reconhecendo texto… ${m.progress != null ? Math.round(m.progress*100)+'%' : m.status}`; } });
+    try {
+      const parts=[];
+      for (let i=0; i<canvases.length; i++) {
+        const st = $('#ocr-status'); if (st) st.textContent = `Reconhecendo texto da página ${i+1} de ${canvases.length}…`;
+        const r = await worker.recognize(canvases[i]);
+        const t = (r.data && r.data.text || '').trim(); if (t) parts.push(t);
+      }
+      text = parts.join('\n\n').replace(/[ \t]+/g,' ').trim();
+      if (!text) note = 'Não consegui reconhecer texto legível. Você ainda pode digitar ou colar o enunciado no campo abaixo.';
+      else if (canvases.length > 1) note = `Foram lidas ${canvases.length} páginas do arquivo. Confira se o texto ficou na ordem correta.`;
+    } finally { await worker.terminate(); }
+  } catch (e) {
+    note = `Não consegui ler automaticamente este arquivo (${(e && e.message) || 'erro de leitura'}). Você ainda pode digitar ou colar o enunciado abaixo.`;
+  }
+  const title = `Exercício ${Math.max(1, Number(S.settings.exerciseCounter) || 1)}`;
+  showExerciseReview(title, text, note);
+}
+function wrapExerciseLine(line, maxWidth, fontHeight) {
+  const words = String(line).trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return [''];
+  const out=[]; let cur='';
+  const width = (str) => Array.from(str).reduce((n,ch)=>n+(ch===' '?0.82:0.69)*fontHeight,0);
+  for (const word of words) {
+    const trial = cur ? cur + ' ' + word : word;
+    if (cur && width(trial) > maxWidth) { out.push(cur); cur=word; }
+    else cur=trial;
+    if (width(cur)>maxWidth && Array.from(cur).length>1) {
+      let part=''; for (const ch of Array.from(cur)) { if (part && width(part+ch)>maxWidth) { out.push(part); part=ch; } else part+=ch; } cur=part;
+    }
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+function insertExercise(title, text) {
+  if (!page || !S.nb) return;
+  const G=S.settings.cm, fontH=clamp(G*0.58,16,25), left=G*2.6, maxWidth=PW-left-G*1.3;
+  const bounds=page.items.length ? boundsOfItems(page.items) : null;
+  let y=bounds ? Math.max(G*1.8, bounds.y2+G*0.8) : G*1.7;
+  const all=[]; const meta={ title, text, y, created:Date.now() };
+  const addLine=(str, h=fontH, color='ink')=>{
+    if (str) { const ti=textItems(str,left,y,h,color); all.push(...ti.out); }
+    y += G*0.93;
+  };
+  const heading=(String(title||'Exercício').trim() || 'Exercício').toLocaleUpperCase('pt-BR');
+  wrapExerciseLine(heading,maxWidth,fontH*1.05).forEach((ln)=>addLine(ln,fontH*1.05,'blue'));
+  all.push({ k:'l', c:'blue', w:1.6, x1:left, y1:y-G*0.28, x2:PW-G*1.3, y2:y-G*0.28 });
+  y += G*0.12;
+  const paragraphs=String(text||'').replace(/\r/g,'').split(/\n/);
+  for (const paragraph of paragraphs) {
+    if (!paragraph.trim()) { y+=G*0.45; continue; }
+    for (const line of wrapExerciseLine(paragraph,maxWidth,fontH)) addLine(line);
+  }
+  if (all.length) {
+    page.items.push(...all); page.exercises = page.exercises || []; page.exercises.push(meta);
+    if (y > page.h-G) page.h=clamp(Math.ceil((y+G)/PH0)*PH0,PH0,PH0*40);
+    commit({ add:all, rem:[] }); S.settings.exerciseCounter=(Number(S.settings.exerciseCounter)||1)+1; markMeta(); C.bk=null; layout(); redraw();
+  }
+  closeLayer();
+}
+
+/* ---------- exportar folhas/cadernos ---------- */
+function exportMenu() {
+  layer.innerHTML = `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-label="Exportar caderno"><div class="modal-head"><h2>Exportar</h2><button class="icon-btn" data-act="close" aria-label="Fechar">${icon('close')}</button></div><p class="hint">Exporte a folha atual como imagem, o caderno aberto como PDF (pela janela de impressão) ou todos os cadernos como backup restaurável.</p><div class="sect"><button class="btn" data-act="export-page-png">${icon('image')} Baixar folha atual como PNG</button><button class="btn" data-act="export-nb-pdf">${icon('fileText')} Exportar este caderno como PDF</button><button class="btn primary" data-act="bk-out">${icon('download')} Backup de todos os cadernos (.json)</button></div></div></div>`;
+}
+function drawPageBackground(ctx, p, scale=1, forceLight=false) {
+  const cs=getComputedStyle(document.documentElement), color=(n,fb)=>cs.getPropertyValue(n).trim()||fb;
+  const paper=forceLight?'#FDFDFB':color('--paper','#FDFDFB'), rule=forceLight?'#B7D0E6':color('--rule','#B7D0E6'), margin=forceLight?'#E7A6A6':color('--margin','#E7A6A6'), dot=forceLight?'#8EA2B5':color('--dot','#8EA2B5');
+  ctx.save(); ctx.scale(scale,scale); ctx.fillStyle=paper; ctx.fillRect(0,0,PW,p.h);
+  const zones=zoneList(p), total=zones.reduce((a,z)=>a+z.weight,0)||1; let top=0;
+  for (let zi=0; zi<zones.length; zi++) {
+    const z=zones[zi], zh=zi===zones.length-1?p.h-top:p.h*z.weight/total, bottom=top+zh;
+    ctx.save(); ctx.beginPath(); ctx.rect(0,top,PW,zh); ctx.clip();
+    const G=Math.max(8,Number(S.settings.cm)||38); ctx.lineWidth=0.9; ctx.strokeStyle=rule;
+    if (z.type==='pautada') {
+      for(let y=Math.ceil(top/G)*G; y<bottom; y+=G){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(PW,y);ctx.stroke();}
+      ctx.strokeStyle=margin;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(G*2.2,top);ctx.lineTo(G*2.2,bottom);ctx.stroke();
+    } else if (z.type==='pontilhada') {
+      ctx.fillStyle=dot;
+      for(let y=Math.ceil(top/G)*G; y<bottom; y+=G) for(let x=0;x<PW;x+=G){ctx.beginPath();ctx.arc(x,y,1.35,0,Math.PI*2);ctx.fill();}
+    } else if (z.type==='quadriculada') {
+      for(let y=Math.ceil(top/G)*G; y<bottom; y+=G){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(PW,y);ctx.stroke();}
+      for(let x=0;x<PW;x+=G){ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();}
+    }
+    ctx.restore(); top=bottom;
+  }
+  ctx.restore();
+}
+function renderPageCanvas(p, maxScale=1.5, forceLight=false) {
+  const scale=Math.min(maxScale, 15000/Math.max(PH0,p.h), 1800/PW);
+  const cv=document.createElement('canvas'); cv.width=Math.max(1,Math.round(PW*scale)); cv.height=Math.max(1,Math.round(p.h*scale));
+  const ctx=cv.getContext('2d'); drawPageBackground(ctx,p,scale,forceLight);
+  ctx.save(); ctx.scale(scale,scale); const pal=forceLight?{ink:'#1B2430',blue:'#2457D6',red:'#D23B30',green:'#1D8A4C',yellow:'#F2BF00',guide:'rgba(115,130,148,0.42)'}:palette();
+  for(const it of p.items) if(it.hl) drawItem(ctx,it,pal);
+  for(const it of p.items) if(!it.hl) drawItem(ctx,it,pal);
+  ctx.restore(); return cv;
+}
+function safeFileName(v) { return String(v||'caderno').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,70)||'caderno'; }
+async function exportCurrentPNG() {
+  convertPending(); await flush();
+  const cv=renderPageCanvas(page,1.8);
+  const blob=await new Promise((resolve)=>cv.toBlob(resolve,'image/png'));
+  if(!blob) throw new Error('Não foi possível gerar a imagem.');
+  const url=URL.createObjectURL(blob), a=document.createElement('a'); a.href=url; a.download=`${safeFileName(S.nb.name)}-folha-${S.pi+1}.png`; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1500); closeLayer();
+}
+async function exportNotebookPDF(win) {
+  if (!win) { alert('O navegador bloqueou a janela de exportação. Permita janelas pop-up para este arquivo e tente novamente.'); return; }
+  convertPending(); await flush(); const nb=S.nb, imgs=[];
+  for(let i=0;i<nb.pages.length;i++) {
+    const pg=await getPage(nb.pages[i]);
+    const cv=renderPageCanvas(pg,1.5,true); imgs.push(cv.toDataURL('image/jpeg',0.9));
+  }
+  const html=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${esc(nb.name)}</title><style>@page{size:A4;margin:9mm}*{box-sizing:border-box}body{margin:0;font:12px Arial,sans-serif;color:#111}.printpage{page-break-after:always;break-after:page;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:100%;height:278mm}.printpage:last-child{page-break-after:auto;break-after:auto}.printpage img{display:block;max-width:100%;max-height:260mm;object-fit:contain}h1{font-size:13px;font-weight:600;margin:0 0 3mm;text-align:center}</style></head><body>${imgs.map((src,i)=>`<section class="printpage"><h1>${esc(nb.name)} — Folha ${i+1}</h1><img alt="Folha ${i+1}" src="${src}"></section>`).join('')}<script>window.onload=()=>setTimeout(()=>window.print(),600);<\/script></body></html>`;
+  win.document.open(); win.document.write(html); win.document.close(); closeLayer();
+}
+
+/* ---------- backup ---------- */
+let BK = null;
+function backupModal(extra = '') {
+  layer.innerHTML = `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-label="Backup"><div class="modal-head"><h2>Backup</h2><button class="icon-btn" data-act="close" aria-label="Fechar">${icon('close')}</button></div>
+    <p class="hint">Seus cadernos são sincronizados com a sua conta, mas um arquivo de backup é uma segunda cópia só sua (cadernos, folhas e treino da letra) que dá para restaurar depois.</p>
+    ${extra}<div class="modal-foot"><button class="btn" data-act="bk-in">Restaurar de arquivo</button><button class="btn primary" data-act="bk-out">Salvar backup</button></div>
+    <input type="file" id="bkfile" accept="application/json,.json" hidden></div></div>`;
+  $('#bkfile').addEventListener('change', readBackup);
+}
+async function exportBackup() {
+  await flush();
+  const pg = {};
+  for (const id of S.nbs.flatMap((n) => n.pages)) pg[id] = await getPage(id);
+  const data = { app: 'letra-limpa', v: 1, saved: Date.now(), meta: { nbs: S.nbs, settings: S.settings, train: S.train }, pages: pg };
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'application/json' }));
+  a.download = 'letra-limpa-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+async function readBackup(e) {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  try {
+    const d = JSON.parse(await f.text());
+    if (d.app !== 'letra-limpa' || !d.meta || !Array.isArray(d.meta.nbs) || !d.pages) throw new Error('formato');
+    for (const nb of d.meta.nbs) if (!nb || typeof nb.id !== 'string' || !Array.isArray(nb.pages)) throw new Error('formato');
+    BK = d;
+    const rep = d.meta.nbs.filter((n) => S.nbs.some((x) => x.id === n.id)).length, add = d.meta.nbs.length - rep;
+    backupModal(`<p class="warn">Este backup tem ${d.meta.nbs.length} caderno(s): ${add} novo(s) serão adicionados e ${rep} já existente(s) serão substituídos pela versão do backup. Os demais cadernos não mudam.</p><button class="btn primary" data-act="bk-go">Confirmar restauração</button>`);
+  } catch (_) { backupModal('<p class="warn">Esse arquivo não parece ser um backup do Letra Limpa.</p>'); }
+}
+async function doRestore() {
+  const d = BK;
+  if (!d) return;
+  for (const nb of d.meta.nbs) {
+    const i = S.nbs.findIndex((x) => x.id === nb.id);
+    if (i >= 0) {
+      for (const id of S.nbs[i].pages) if (!nb.pages.includes(id)) { pages.delete(id); hist.delete(id); dirtyPages.delete(id); await DB.del('page:' + id); }
+      S.nbs[i] = nb;
+    } else S.nbs.unshift(nb);
+    coverDirty.add(nb.id);
+    for (const id of nb.pages) if (d.pages[id]) { pages.set(id, cleanPage(d.pages[id], id, 'lisa')); hist.delete(id); dirtyPages.add(id); }
+  }
+  for (const ch in d.meta.train || {}) S.train[ch] = (S.train[ch] || []).concat(d.meta.train[ch]).slice(-8);
+  tpls = Recog.templates(S.train); BK = null; dirtyMeta = true;
+  await flush(); closeLayer(); renderHome();
+}
+
+/* ---------- exemplo inicial ---------- */
+function textItems(str, x, y, h, c) {
+  const out = [];
+  let cx = x;
+  for (const ch of str) {
+    if (ch === ' ') { cx += h * 0.82; continue; }
+    let w = h * 0.55, bh = h, by = y;
+    if (ch === '=' || ch === '+') { w = h * 0.5; bh = h * 0.5; by = y + h * 0.25; }
+    else if (ch === '-') { w = h * 0.4; bh = h * 0.1; by = y + h * 0.45; }
+    else if (ch === 'x') { bh = h * 0.62; by = y + h * 0.38; }
+    out.push({ k: 'g', ch, c, x: cx, y: by, w, h: bh });
+    cx += w + h * 0.14;
+  }
+  return { out, end: cx };
+}
+const CALLIGRAPHY_LOWER = Array.from('abcdefghijklmnopqrstuvwxyzáàâãéêíóôõúüç');
+const CALLIGRAPHY_UPPER = Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZÁÀÂÃÉÊÍÓÔÕÚÜÇ');
+function calligraphyLessons() {
+  const lessons = [];
+  for (const [group, chars, script] of [
+    ['Minúscula · bastão', CALLIGRAPHY_LOWER, 'print'],
+    ['Minúscula · cursiva', CALLIGRAPHY_LOWER, 'cursive'],
+    ['Maiúscula · bastão', CALLIGRAPHY_UPPER, 'print'],
+    ['Maiúscula · cursiva', CALLIGRAPHY_UPPER, 'cursive'],
+    ['Números · bastão', Array.from('0123456789'), 'print'],
+    ['Números · estilo cursivo', Array.from('0123456789'), 'cursive']
+  ]) for (const ch of chars) lessons.push({ ch, group, script });
+  return lessons;
+}
+function addPracticeText(items, text, x, y, h, color, script, guide = false) {
+  const made = textItems(text, x, y, h, color).out;
+  for (const it of made) { it.script = script; if (guide) it.guide = true; }
+  items.push(...made);
+}
+function makeCalligraphyPage(index) {
+  const pg = newPage('pautada');
+  const lessons = calligraphyLessons();
+  const lesson = lessons[((Number(index) % lessons.length) + lessons.length) % lessons.length];
+  pg.practice = { index: Number(index) || 0, ch: lesson.ch, group: lesson.group, script: lesson.script,
+    label: `${lesson.group} · “${lesson.ch}”` };
+  const G = Math.max(20, Number(S.settings.cm) || 38);
+  pg.h = Math.max(PH0, (5 + 5 * 4) * G + 90);
+  addPracticeText(pg.items, 'CADERNO DE CALIGRAFIA', 65, 28, 25, 'blue', 'print');
+  addPracticeText(pg.items, `LICAO ${Number(index) + 1}`, 65, 58, 21, 'ink', 'print');
+  addPracticeText(pg.items, lesson.group.toLocaleUpperCase('pt-BR'), 230, 58, 21, 'blue', 'print');
+  addPracticeText(pg.items, lesson.ch, 82, 72, 66, 'blue', lesson.script);
+  addPracticeText(pg.items, 'TRACE O MODELO E REPITA NA LINHA', 190, 94, 16, 'guide', 'print', true);
+  for (let row = 0; row < 6; row++) {
+    const baseline = (5 + row * 4) * G;
+    const y = baseline - 52;
+    addPracticeText(pg.items, lesson.ch + '  ' + lesson.ch, 70, y, 48, 'guide', lesson.script, true);
+  }
+  return pg;
+}
+async function appendCalligraphyPage() {
+  if (!S.nb || S.nb.kind !== 'calligraphy') return;
+  convertPending();
+  const nextIndex = Math.max(0, Number(S.nb.practiceIndex) || 0) + 1;
+  const pg = makeCalligraphyPage(nextIndex);
+  pages.set(pg.id, pg); dirtyPages.add(pg.id);
+  S.nb.pages.push(pg.id); S.nb.practiceIndex = nextIndex; S.nb.updated = Date.now();
+  markMeta();
+  await gotoPage(S.nb.pages.length - 1);
+}
+
+function seedExample() {
+  const G = S.settings.cm, h = 30, x0 = 100;
+  const pg = newPage('pautada');
+  const line = (i, str, c = 'ink') => textItems(str, x0, i * G - h - 4, h, c);
+  const t = line(3, 'PROBLEMA 1');
+  const a = line(5, '2x + 3 = 11'), b = line(7, '2x = 11 - 3'), d = line(9, '2x = 8'), e = line(11, 'x = 4', 'blue');
+  pg.items.push({ k: 's', c: 'yellow', w: 30, p: [x0 - 6, 11 * G - h / 2 - 4, e.end + 2, 11 * G - h / 2 - 4], hl: true });
+  [t, a, b, d, e].forEach((r) => pg.items.push(...r.out));
+  pg.items.push({ k: 'l', c: 'red', w: 2.6, x1: x0, y1: 3 * G + 5, x2: t.end, y2: 3 * G + 5 });
+  const nb = { id: uid(), name: 'Exemplo: Matemática', cover: { kind: 'color', color: COVERS[0] }, pages: [pg.id], defType: 'pautada', created: Date.now(), updated: Date.now() };
+  S.nbs.push(nb); pages.set(pg.id, pg); dirtyPages.add(pg.id); dirtyMeta = true;
+}
+
+/* ---------- ações ---------- */
+document.addEventListener('click', async (e) => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const a = el.dataset.act;
+  switch (a) {
+    case 'close': closeLayer(); F = null; FX = null; break;
+    case 'newnb': openForm('new'); break;
+    case 'open': openNb(el.dataset.id, 0); break;
+    case 'menu': openMenu(el.dataset.id, el); break;
+    case 'm-rename': { const id = S.menuId; closeLayer(); openForm('rename', id); break; }
+    case 'm-cover': { const id = S.menuId; closeLayer(); openForm('cover', id); break; }
+    case 'm-delete': confirmDelete(S.menuId); break;
+    case 'do-delete': doDelete(); break;
+    case 'pick-color': F.cover = { kind: 'color', color: el.dataset.c }; $('#nbcover').innerHTML = coverPick(); break;
+    case 'pick-photo': $('#coverfile').click(); break;
+    case 'rm-photo': F.cover = { kind: 'color', color: COVERS[0] }; $('#nbcover').innerHTML = coverPick(); break;
+    case 'pick-type': F.type = el.dataset.t; $('#nbtypes').innerHTML = typeOptions(F.type); break;
+    case 'pick-kind': { F.kind = el.dataset.kind === 'calligraphy' ? 'calligraphy' : 'standard'; const nm = $('#nbname'); if (nm && !nm.value.trim() && F.kind === 'calligraphy') nm.value = 'Caderno de caligrafia'; else if (nm && nm.value === 'Caderno de caligrafia' && F.kind === 'standard') nm.value = ''; F.name = nm ? nm.value : F.name; const kb=$('#nbkinds'); if(kb) kb.querySelectorAll('.typeopt').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.kind===F.kind))); break; }
+    case 'form-ok': submitForm(); break;
+    case 'home': convertPending(); await flush(); renderHome(); break;
+    case 'logout': convertPending(); await flush(); if (window.LL_cloud) await window.LL_cloud.flush(); if (window.LL_logout) window.LL_logout(); else location.reload(); break;
+    case 'retry': location.reload(); break;
+    case 'prev': if (S.pi > 0) gotoPage(S.pi - 1); break;
+    case 'next': if (S.pi < S.nb.pages.length - 1) await gotoPage(S.pi + 1); else if (S.nb && S.nb.kind === 'calligraphy') await appendCalligraphyPage(); break;
+    case 'goto': { const i = +el.dataset.i; if (i !== S.pi) gotoPage(i); break; }
+    case 'undo': undo(); break;
+    case 'redo': redo(); break;
+    case 'addpage': popAt(el, Object.keys(TYPES).map((t) => `<button data-act="add-type" data-t="${t}"><span class="mini" style="${bgCss(t, 8)}"></span>Folha ${TYPES[t].toLowerCase()}</button>`).join('')); break;
+    case 'add-type': {
+      closeLayer(); convertPending();
+      const pg = newPage(el.dataset.t);
+      pages.set(pg.id, pg); dirtyPages.add(pg.id);
+      S.nb.pages.splice(S.pi + 1, 0, pg.id);
+      markMeta(); gotoPage(S.pi + 1); break;
+    }
+    case 'settings': layer.innerHTML = settingsHTML(); break;
+    case 'exercise-menu': popAt(el, `<button data-act="exercise-camera">${icon('camera')} Tirar foto do exercício</button><button data-act="exercise-import">${icon('fileText')} Importar imagem ou PDF</button>`); break;
+    case 'exercise-camera': closeLayer(); $('#exercise-camera').click(); break;
+    case 'exercise-import': closeLayer(); $('#exercise-file').click(); break;
+    case 'exercise-insert': { const title=$('#exercise-title')?.value?.trim() || `Exercício ${Number(S.settings.exerciseCounter)||1}`; const text=$('#exercise-text')?.value || ''; if (!text.trim()) { const ta=$('#exercise-text'); if (ta) { ta.focus(); ta.placeholder='Digite ou cole o enunciado antes de inserir.'; } break; } insertExercise(title,text); break; }
+    case 'export-menu': exportMenu(); break;
+    case 'export-page-png': exportCurrentPNG().catch((e)=>alert((e&&e.message)||'Falha ao exportar a folha.')); break;
+    case 'export-nb-pdf': { closeLayer(); const win=window.open('about:blank','_blank'); exportNotebookPDF(win).catch((e)=>{ if(win) win.close(); alert((e&&e.message)||'Falha ao exportar o caderno.'); }); break; }
+    case 'zone-add': { const current=page.zones && page.zones.length>1 ? page.zones.map(z=>({...z})) : [{type:page.type,weight:1}]; const avg=Math.max(1,Math.round(current.reduce((a,z)=>a+(+z.weight||1),0)/current.length)); const nextType=Object.keys(TYPES).find(t=>!current.some(z=>z.type===t)) || 'lisa'; current.push({type:nextType,weight:avg}); page.zones=current; markPage(); C.bk=null; applyBg(); updateHeader(); $('#layer').innerHTML=settingsHTML(); break; }
+    case 'zone-remove': { const i=+el.dataset.i; const zones=page.zones && page.zones.length>1 ? page.zones.map(z=>({...z})) : [{type:page.type,weight:1}]; if(zones.length>1) zones.splice(i,1); if(zones.length<2){ page.type=zones[0].type; page.zones=[]; } else page.zones=zones; markPage(); C.bk=null; applyBg(); updateHeader(); $('#layer').innerHTML=settingsHTML(); break; }
+    case 'zone-clear': if(page.zones && page.zones.length>1) page.type=page.zones[0].type; page.zones=[]; markPage(); C.bk=null; applyBg(); updateHeader(); $('#layer').innerHTML=settingsHTML(); break;
+    case 'zoom-in': setZoom(viewZoom + 0.2); break;
+    case 'zoom-out': setZoom(viewZoom - 0.2); break;
+    case 'zoom-reset': setZoom(1); break;
+    case 'set-type': page.type = el.dataset.t; page.zones=[]; markPage(); applyBg(); updateHeader(); $('#pgtypes').querySelectorAll('.typeopt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.t === page.type))); $('#zone-editor').innerHTML=zoneEditorHTML(); break;
+    case 'del-page': {
+      if (el.dataset.sure !== '1') { el.dataset.sure = '1'; el.textContent = 'Toque de novo para apagar'; break; }
+      convertPending();
+      const id = page.id;
+      S.nb.pages.splice(S.pi, 1);
+      pages.delete(id); hist.delete(id); dirtyPages.delete(id); DB.del('page:' + id);
+      markMeta(); closeLayer(); gotoPage(Math.min(S.pi, S.nb.pages.length - 1)); break;
+    }
+    case 'cm-minus': case 'cm-plus': {
+      S.settings.cm = clamp(S.settings.cm + (a === 'cm-plus' ? 1 : -1), 20, 80);
+      $('#cmout').textContent = S.settings.cm + ' px';
+      $('#cmbox').style.width = $('#cmbox').style.height = S.settings.cm + 'px';
+      markMeta(); applyBg(); break;
+    }
+    case 'finger': S.settings.finger = !S.settings.finger; el.setAttribute('aria-checked', String(S.settings.finger)); markMeta(); break;
+    case 'recognizeStraight': S.settings.recognizeStraight = !S.settings.recognizeStraight; el.setAttribute('aria-checked', String(S.settings.recognizeStraight)); markMeta(); break;
+    case 'snapBaseline': S.settings.snapBaseline = !S.settings.snapBaseline; el.setAttribute('aria-checked', String(S.settings.snapBaseline)); markMeta(); break;
+    case 'tool': convertPending(); S.tool = el.dataset.t; renderTools(); break;
+    case 'color': S.col[S.tool] = el.dataset.c; savePrefs(); renderTools(); break;
+    case 'size': S.sizeIdx = +el.dataset.i; savePrefs(); renderTools(); break;
+    case 'toggle-convert': S.convert = !S.convert; if (!S.convert) cancelPending(); savePrefs(); renderTools(); break;
+    case 'lock': S.settings.lock = !S.settings.lock; markMeta(); renderTools(); break;
+    case 'lines-minus': case 'lines-plus': S.settings.lines = clamp(S.settings.lines + (a === 'lines-plus' ? 0.5 : -0.5), 0.5, 4); S.settings.lock = true; markMeta(); renderTools(); break;
+    case 'penbtn': S.settings.penBtn = el.dataset.m; markMeta(); $('#penbtns').querySelectorAll('.typeopt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.m === S.settings.penBtn))); break;
+    case 'backup': backupModal(); break;
+    case 'bk-in': $('#bkfile').click(); break;
+    case 'bk-out': exportBackup().catch(() => backupModal('<p class="warn">Não consegui gerar o arquivo. Tente de novo.</p>')); break;
+    case 'bk-go': doRestore(); break;
+    case 'train': closeLayer(); openTrain(); break;
+    case 'tr-pick': TR.ch = el.dataset.ch; TR.isWord = false; TR.strokes = []; TR.cur = null; TR.feedback = `Treinando “${TR.ch}”. Salve 3 a 5 exemplos para melhorar a identificação.`; TR.paint(); trInfo(); break;
+    case 'tr-use-word': { const input = $('#tr-word'); const word = (input ? input.value : '').trim().replace(/\s+/g, ' '); if (Array.from(word).length < 2) { TR.feedback = 'Digite uma palavra com pelo menos duas letras.'; trInfo(); break; } TR.ch = word; TR.isWord = true; TR.strokes = []; TR.cur = null; TR.feedback = `Treinando a palavra cursiva “${TR.ch}”. Escreva a palavra inteira no quadro e salve 3 a 5 amostras.`; TR.paint(); trInfo(); break; }
+    case 'tr-clear': TR.strokes = []; TR.cur = null; TR.feedback = 'Quadro limpo. Desenhe o caractere novamente.'; TR.paint(); trInfo(); break;
+    case 'tr-undo': TR.strokes.pop(); TR.cur = null; TR.feedback = 'Último traço removido.'; TR.paint(); trInfo(); break;
+    case 'tr-prev': trMove(-1); break;
+    case 'tr-next': trMove(1); break;
+    case 'tr-guide': TR.showGuide = !TR.showGuide; TR.paint(); trInfo(); break;
+    case 'tr-test': trTest(); break;
+    case 'tr-save': trSave(); break;
+    case 'tr-reset': delete S.train[TR.ch]; tpls = Recog.templates(S.train); markMeta(); TR.strokes = []; TR.cur = null; TR.feedback = `Amostras de “${TR.ch}” apagadas.`; TR.paint(); trInfo(); break;
+    case 'fix-ok': fixOk(); break;
+    case 'fix-choice': fixChoice(el.dataset.choice); break;
+    case 'fix-del': fixDel(); break;
+  }
+});
+document.addEventListener('input', (e) => {
+  if (e.target.matches('[data-zone-weight]') && page) {
+    const i=+e.target.dataset.zoneWeight; const zones=page.zones && page.zones.length>1 ? page.zones : [{type:page.type,weight:1}];
+    if (zones[i]) { zones[i].weight=clamp(+e.target.value||1,1,100); if(page.zones && page.zones.length>1) page.zones=zones; applyBg(); markPage(); const total=zones.reduce((a,z)=>a+(+z.weight||1),0)||1; const lbl=e.target.parentElement.querySelector('.zone-pct'); if(lbl) lbl.textContent=Math.round((zones[i].weight/total)*100)+'% da folha'; }
+  }
+  if (e.target.id === 'delay') {
+    S.settings.delay = +e.target.value;
+    $('#delayout').textContent = (S.settings.delay / 1000).toFixed(1).replace('.', ',') + ' s';
+    markMeta();
+  }
+});
+document.addEventListener('change', (e) => {
+  if (e.target.matches('[data-zone-type]') && page) {
+    const i=+e.target.dataset.zoneType; const zones=page.zones && page.zones.length>1 ? page.zones.map(z=>({...z})) : [{type:page.type,weight:1}];
+    if(zones[i]) { zones[i].type=e.target.value; if(zones.length<2){page.type=e.target.value; page.zones=[];} else page.zones=zones; markPage(); C.bk=null; applyBg(); updateHeader(); }
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && layer.innerHTML) { closeLayer(); F = null; FX = null; }
+  else if (e.key === 'Enter' && e.target && e.target.id === 'fxch') fixOk();
+  else if (page && !layer.innerHTML && (e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); }
+  else if (page && !layer.innerHTML && (e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { e.preventDefault(); redo(); }
+});
+const themeChanged = () => { palCache = null; C.bk = null; if (page) redraw(); };
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', themeChanged);
+new MutationObserver(themeChanged).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+/* ao sair ou esconder a aba: grava tudo local e manda para a nuvem na hora */
+const saveAll = () => { convertPending(); flush(); if (window.LL_cloud) window.LL_cloud.flush(); };
+window.addEventListener('pagehide', saveAll);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveAll(); });
+if (document.fonts && document.fonts.load) {
+  document.fonts.load('500 40px Figtree').then(() => { metr.clear(); C.bk = null; redraw(); }).catch(() => {});
+}
+
+/* ---------- começo (chamado pelo módulo do Firebase depois do login) ---------- */
+let booted = false;
+async function boot() {
+  if (booted) return;
+  booted = true;
+  app.innerHTML = '<div class="home"><p class="hint">Abrindo seus cadernos…</p></div>';
+  await DB.open('letra-limpa-' + (window.LL_uid || 'local'));
+  await migrateLegacy();
+
+  /* traz o que está na nuvem; o que só existe aqui sobe para a nuvem */
+  if (window.LL_cloud) {
+    try {
+      const all = await window.LL_cloud.pullAll();
+      const cloudKeys = new Set();
+      for (const [k, v] of all) { cloudKeys.add(k); await DB.set(k, v, true); }
+      for (const k of await DB.keys()) if (!cloudKeys.has(k)) window.LL_cloud.push(k, await DB.get(k));
+    } catch (e) { /* sem rede: segue com o que tem neste aparelho */ }
+  }
+
+  const meta = await DB.get('meta');
+  if (meta && Array.isArray(meta.nbs)) {
+    S.nbs = meta.nbs;
+    Object.assign(S.settings, meta.settings || {});
+    if (!['hold', 'swap', 'lock', 'off'].includes(S.settings.penBtn)) S.settings.penBtn = 'hold';
+    if (typeof S.settings.recognizeStraight !== 'boolean') S.settings.recognizeStraight = false;
+    if (typeof S.settings.snapBaseline !== 'boolean') S.settings.snapBaseline = true;
+    if (!Number.isFinite(S.settings.delay) || S.settings.delay < 900) S.settings.delay = 1400;
+    if (!Number.isFinite(S.settings.exerciseCounter) || S.settings.exerciseCounter < 1) S.settings.exerciseCounter = 1;
+    S.train = meta.train || {};
+  }
+  for (const nb of S.nbs) {
+    if (nb.cover && nb.cover.kind === 'photo' && !nb.cover.data) {
+      nb.cover.data = await DB.get('cover:' + nb.id);
+    }
+  }
+  const pr = S.settings.prefs;
+  if (pr) {
+    Object.assign(S.col, pr.col || {});
+    S.sizeIdx = pr.sizeIdx != null ? pr.sizeIdx : 1;
+    S.convert = pr.convert !== false;
+  }
+  if (!meta && !S.nbs.length) { seedExample(); await flush(); }
+
+  tpls = Recog.templates(S.train);
+  const au = document.getElementById('auth');
+  if (au) au.remove();
+  renderHome();
+  window.LL_splashOff();
+}
+window.LL_boot = boot;
+})();
+</script>
+
+<!-- ================= FIREBASE: login + sincronização ================= -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, setDoc, deleteDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* Configuração do app Web Letra Limpa (Firebase Console > Configurações do projeto > Seus apps). */
+const firebaseConfig = {
+  apiKey: "AIzaSyDBp8lmzbkjtUtoimt5ap_g_3CxIVon95Q",
+  authDomain: "letra-e2606.firebaseapp.com",
+  projectId: "letra-e2606",
+  storageBucket: "letra-e2606.firebasestorage.app",
+  messagingSenderId: "333929731151",
+  appId: "1:333929731151:web:21360cf507a74c8020c63a"
+};
+
+const requiredConfig = ['apiKey', 'authDomain', 'projectId', 'appId'];
+const configIncomplete = requiredConfig.some((key) => {
+  const value = String(firebaseConfig[key] || '').trim();
+  return !value || /COLE_AQUI|SEU-PROJETO|YOUR[_-]|EXAMPLE/i.test(value);
+});
+
+if (configIncomplete) {
+  const err = document.getElementById('auth-err');
+  if (err) err.textContent = 'Configure o Firebase neste HTML: substitua apiKey, authDomain, projectId e appId pelos dados reais do seu app Web no Console do Firebase.';
+  if (window.LL_splashOff) window.LL_splashOff();
+} else {
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ---------- sincronização: users/{uid}/kv/{chave} = { k, t, json } ---------- */
+const MAX_BYTES = 900000;            // margem segura abaixo do limite de ~1 MiB por documento
+const queue = new Map();             // chave -> { del: bool, json: string }
+let timer = 0, sending = null;
+const enc = new TextEncoder();
+
+function setSync(s) { window.LL_sync = s; if (window.LL_onSync) window.LL_onSync(); }
+const ref = (k) => doc(db, 'users', auth.currentUser.uid, 'kv', k);
+
+async function send() {
+  if (!auth.currentUser || !queue.size) return;
+  const batch = [...queue.entries()];
+  queue.clear();
+  let bad = false;
+  await Promise.all(batch.map(async ([k, job]) => {
+    try {
+      if (job.del) {
+        await deleteDoc(ref(k));
+      } else {
+        // O nome do documento e o campo k precisam corresponder às regras.
+        await setDoc(ref(k), { k, t: Date.now(), json: job.json });
+      }
+    } catch (e) {
+      bad = true;
+      // Não substitui uma alteração mais nova que entrou na fila enquanto enviávamos.
+      if (!queue.has(k)) queue.set(k, job);
+      window.LL_syncError = (e && (e.code || e.message)) || 'erro-desconhecido';
+    }
+  }));
+  if (!bad) window.LL_syncError = '';
+  setSync(bad ? 'err' : (queue.size ? 'wait' : 'ok'));
+  // Repete operações que falharam (incluindo exclusões), sem criar um ciclo apertado.
+  if (bad && queue.size) {
+    clearTimeout(timer);
+    timer = setTimeout(flushNow, 5000);
+  }
+}
+function flushNow() {
+  clearTimeout(timer); timer = 0;
+  sending = (sending || Promise.resolve()).then(send).catch(() => setSync('err'));
+  return sending;
+}
+
+window.LL_cloud = {
+  push(k, v) {
+    if (!auth.currentUser) return;
+    let json;
+    try { json = JSON.stringify(v === undefined ? null : v); } catch (e) { return; }
+    if (enc.encode(json).length >= MAX_BYTES) {
+      queue.delete(k);
+      window.LL_syncError = 'documento-grande-demais';
+      setSync('big');
+      return;
+    }
+    queue.set(k, { del: false, json });
+    window.LL_syncError = '';
+    setSync('wait');
+    clearTimeout(timer); timer = setTimeout(flushNow, 1500);
+  },
+  remove(k) {
+    if (!auth.currentUser) return;
+    queue.set(k, { del: true });
+    window.LL_syncError = '';
+    setSync('wait');
+    clearTimeout(timer); timer = setTimeout(flushNow, 1500);
+  },
+  flush: flushNow,
+  async pullAll() {
+    if (!auth.currentUser) throw new Error('Usuário não autenticado para sincronizar.');
+    const out = [];
+    try {
+      const snap = await getDocs(collection(db, 'users', auth.currentUser.uid, 'kv'));
+      snap.forEach((d) => {
+        try {
+          const data = d.data();
+          // Lê o formato atual (json) e também documentos antigos (d) para migrá-los.
+          const raw = typeof data.json === 'string' ? data.json : data.d;
+          if (typeof raw === 'string') out.push([d.id, JSON.parse(raw)]);
+        } catch (e) {
+          console.warn('Documento de sincronização ignorado:', d.id, e);
+        }
+      });
+      setSync('ok');
+      window.LL_syncError = '';
+      return out;
+    } catch (e) {
+      setSync('err');
+      window.LL_syncError = (e && (e.code || e.message)) || 'erro-desconhecido';
+      throw e; // Não finge que a nuvem está vazia quando a leitura foi negada.
+    }
+  }
+};
+window.LL_logout = async () => { try { await signOut(auth); } finally { location.reload(); } };
+
+/* ---------- tela de login ---------- */
+const $ = (id) => document.getElementById(id);
+let signup = false;
+function setMode(s) {
+  signup = s;
+  $('auth-sub').textContent = s ? 'Crie sua conta com e-mail e senha.' : 'Entre com seu e-mail e senha.';
+  $('auth-go').textContent = s ? 'Criar conta' : 'Entrar';
+  $('auth-mode').textContent = s ? 'Já tenho cadastro' : 'Ainda não tenho cadastro';
+  $('auth-pass').autocomplete = s ? 'new-password' : 'current-password';
+  $('auth-err').textContent = '';
+}
+const MSG = {
+  'auth/invalid-email': 'E-mail inválido.',
+  'auth/missing-password': 'Digite a senha.',
+  'auth/weak-password': 'Senha fraca: use pelo menos 6 caracteres.',
+  'auth/email-already-in-use': 'Este e-mail já tem cadastro. Toque em "Já tenho cadastro".',
+  'auth/invalid-credential': 'E-mail ou senha incorretos.',
+  'auth/user-not-found': 'E-mail ou senha incorretos.',
+  'auth/wrong-password': 'E-mail ou senha incorretos.',
+  'auth/too-many-requests': 'Muitas tentativas. Espere um pouco e tente de novo.',
+  'auth/network-request-failed': 'Sem conexão com a internet.',
+  'auth/operation-not-allowed': 'Login por e-mail não está ativado no Firebase.',
+  'auth/invalid-api-key': 'A apiKey do Firebase é inválida. Copie a configuração correta do app Web no Console do Firebase.',
+  'auth/api-key-not-valid': 'A apiKey do Firebase é inválida. Copie a configuração correta do app Web no Console do Firebase.',
+  'auth/unauthorized-domain': 'Este endereço não está autorizado no Firebase. Em vez de abrir o arquivo diretamente, use um servidor local (por exemplo, Live Server) e autorize localhost em Authentication > Settings > Authorized domains.',
+  'auth/configuration-not-found': 'A configuração de Authentication não foi encontrada neste projeto Firebase.',
+};
+const erro = (e) => {
+  const code = e && e.code ? String(e.code) : '';
+  if (code.startsWith('auth/api-key-not-valid')) return MSG['auth/api-key-not-valid'];
+  return MSG[code] || 'Não deu certo (' + (code || (e && e.message) || 'erro') + ').';
+};
+
+$('auth-mode').addEventListener('click', () => setMode(!signup));
+$('auth-form').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const email = $('auth-email').value.trim(), pass = $('auth-pass').value;
+  const btn = $('auth-go');
+  $('auth-err').textContent = '';
+  if (!email) { $('auth-err').textContent = 'Digite o e-mail.'; return; }
+  btn.disabled = true;
+  try {
+    if (signup) await createUserWithEmailAndPassword(auth, email, pass);
+    else await signInWithEmailAndPassword(auth, email, pass);
+  } catch (e) { $('auth-err').textContent = erro(e); }
+  btn.disabled = false;
+});
+$('auth-reset').addEventListener('click', async () => {
+  const email = $('auth-email').value.trim();
+  if (!email) { $('auth-err').textContent = 'Digite seu e-mail e toque de novo em "Esqueci a senha".'; return; }
+  try { await sendPasswordResetEmail(auth, email); $('auth-err').textContent = 'Enviamos um link para redefinir a senha.'; }
+  catch (e) { $('auth-err').textContent = erro(e); }
+});
+
+/* ---------- quando o login muda ---------- */
+let started = false;
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    if (started) return;
+    started = true;
+    window.LL_uid = user.uid;
+    window.LL_boot();
+  } else {
+    const au = $('auth');
+    if (au) au.style.display = 'flex';
+    window.LL_splashOff();
+  }
+});
+}
+</script>
+</body>
+</html>
